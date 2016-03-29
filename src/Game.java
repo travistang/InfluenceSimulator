@@ -17,7 +17,6 @@ public class Game {
 	{
 		return gameboard;
 	}
-	
 	public Player[] getPlayers()
 	{
 		return players;
@@ -43,6 +42,7 @@ public class Game {
 	public void setController(GameBoardViewController con)
 	{
 		controller = con;
+		controller.setGame(this);
 	}
 	
 	//initialize player starting positions

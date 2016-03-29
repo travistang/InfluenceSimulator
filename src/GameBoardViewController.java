@@ -5,10 +5,12 @@ import java.util.Observer;
 
 public class GameBoardViewController{
 
-	private GameBoard gameboard;
+//	private GameBoard gameboard;
+	private Game game;
 	private GamePanel panel;
 	private Cell selectedCell;
 	private HashMap<Cell,Node> cellNodeMap;
+	// currentPlayer means the player playing the round
 	private int currentPlayer;
 	// adding mode
 	private boolean adding;
@@ -18,6 +20,11 @@ public class GameBoardViewController{
 	{
 		return cellNodeMap.get(cell);
 	}
+	public void setGame(Game game)
+	{
+		this.game = game;
+	}
+	
 	public Cell getCell(Node node)
 	{
 		for(Map.Entry<Cell,Node> e : cellNodeMap.entrySet())
@@ -26,6 +33,24 @@ public class GameBoardViewController{
 				return e.getKey();
 		}
 		return null;
+	}
+	//restore default
+	public void reset()
+	{
+		game.getGameBoard().reset();
+		
+		//repaint the game panel
+		panel.repaint();
+	}
+	/**
+	 * Update game board status, game panels and everything
+	 */
+	public void update()
+	{
+		for(int i = 0; i < game.getGameBoard().getNodes().size();i++)
+		{
+			
+		}
 	}
 	/**
 	 * Return the status of the controller
@@ -54,7 +79,7 @@ public class GameBoardViewController{
 	}
 	public boolean isLargeCell(int i)
 	{
-		return gameboard.getLargeCellsList().contains(i);
+		return game.getGameBoard().getLargeCellsList().contains(i);
 	}
 	/**
 	 * This function handles cells selection rule
@@ -138,23 +163,24 @@ public class GameBoardViewController{
 		}else
 		{
 		}
+		update();
 	}
-	GameBoardViewController(GameBoard gb, GamePanel dp)
+	GameBoardViewController(Game game, GamePanel dp)
 	{
 		// construct all mappings here
-		gameboard = gb;
+		this.game = game;
 		panel = dp;
 		panel.setController(this);
 		cellNodeMap = new HashMap<Cell,Node>();
 		HashMap<Cell,Coordinate> cellCoordMap = new HashMap<Cell,Coordinate>();
-		if(gameboard.getNumberOfNodes() != panel.getCells().length)
+		if(game.getGameBoard().getNumberOfNodes() != panel.getCells().length)
 		{
 			System.out.println("number of nodes in gameboard does not match number of cells in panel.");
 			return;
 		}
 		// construct cellNodeMap
 		int i = 0;
-		for(Node n : gameboard.getNodes())
+		for(Node n : game.getGameBoard().getNodes())
 		{
 			cellNodeMap.put(panel.getCells()[i++],n);
 		}
@@ -165,7 +191,7 @@ public class GameBoardViewController{
 		 */
 		i = 0;
 		int z = 0;
-		int cellsPerCol = (int)Math.ceil(Math.sqrt(gameboard.getNumberOfNodes()));
+		int cellsPerCol = (int)Math.ceil(Math.sqrt(game.getGameBoard().getNumberOfNodes()));
 		int len = (int)Cell.CELL_DIMENSION.getWidth()*2;
 		for(int y = len/2; y < cellsPerCol*len + len/2; y+=len)
 		{
@@ -192,7 +218,6 @@ public class GameBoardViewController{
 
 		}
 		panel.setCellCoordinateMap(cellCoordMap);
-		
 		currentPlayer = 0;
 	}
 }

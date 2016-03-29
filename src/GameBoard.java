@@ -320,6 +320,18 @@ public class GameBoard {
 	{
 		return largeCells;
 	}
+	/**
+	 *  reset numbers and owners of every cell to 0 (unoccupied)
+	 *  The position of the large cells will retain
+	 */
+	public void reset()
+	{
+		for(int i = 0; i < nodes.size(); i++)
+		{
+			nodes.get(i).setNumber(0);
+			nodes.get(i).setOwner(0);
+		}
+	}
 	public GameBoard(int numCells)
 	{
 		numberOfCells = numCells;

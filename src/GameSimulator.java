@@ -57,7 +57,7 @@ public class GameSimulator {
 	public GameSimulator() {
 		game = new Game(5,130,GAMEPANEL_WIDTH/(int)Cell.CELL_DIMENSION.getWidth());
 		gamePanel = new GamePanel(game.getGameBoard().getNumberOfNodes());
-		controller = new GameBoardViewController(game.getGameBoard(),gamePanel);
+		controller = new GameBoardViewController(game,gamePanel);
 		initialize();
 	}
 
@@ -79,6 +79,7 @@ public class GameSimulator {
 		JButton resetButton = new JButton("Reset");
 		resetButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				controller.reset();
 			}
 		});
 		
