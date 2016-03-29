@@ -108,13 +108,5 @@ public class Cell extends JButton{
 		this.setFont(new Font("Arial", Font.PLAIN,8));
 		this.setAppearance(0,0);
 		this.setPreferredSize(CELL_DIMENSION);
-		this.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				e.getSource();
-			}
-		});
 	}
 }

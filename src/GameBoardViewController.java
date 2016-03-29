@@ -60,6 +60,8 @@ public class GameBoardViewController{
 			//update info in gameboard
 			Node n = game.getGameBoard().getNodes().get(sp[i]);
 			n.setOwner(i + 1);
+			//TODO: remove me
+
 			n.setNumber(2);
 		}
 		update();
@@ -156,49 +158,27 @@ public class GameBoardViewController{
 			update();
 			return;
 		}
-		int nodeOwner = node.getOwner();
-		//1 & 2.
+		
+		//no cell is selected previously
 		if(selectedCell == null)
 		{
-			if(nodeOwner == currentPlayer)
+			panel.highlight(cell);
+			selectedCell = cell;
+		}else
+		{
+			Node target = getNode(selectedCell);
+
+			if(node.getOwner() != target.getOwner())
+			{
+				// the connectivity would be checked when attack
+				// so no need to check again
+				target.attack(node);
+				panel.unhighlight();
+			}else
 			{
 				selectedCell = cell;
 				panel.highlight(cell);
 			}
-			return;
-		}else
-		{
-			Node selectedNode = getNode(selectedCell);
-			
-			if(selectedNode == null)
-			{
-				System.out.println("incomplete cell-node mapping");
-				return;				
-			}
-			
-			//3.
-			if(node.isConnectedTo(selectedNode))
-			{
-				node.attack(selectedNode);
-			}else
-			{
-				//4.
-				selectedCell = cell;
-			}
-		}
-
-		if(selectedCell != null)
-		{
-			//2.
-			if(getNode(selectedCell).isConnectedTo(getNode(cell)))
-			{
-				selectedCell = cell;
-			}else
-			{
-				
-			}
-		}else
-		{
 		}
 		update();
 	}

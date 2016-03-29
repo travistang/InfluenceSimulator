@@ -49,6 +49,7 @@ public class GameBoard {
 		{
 			nodes.get(i).disconnectFromAllNodes();
 		}
+
 		for(int i = 0; i < mat.length; i++)
 		{
 			for(int j = 0; j < mat[0].length; j++)
@@ -118,9 +119,10 @@ public class GameBoard {
 		//0.
 		int[][] mat = generateFullyConnectedAdjacencyMatrix();
 		this.connectNodesAccordingToAdjacencyMatrix(mat);
+
 		//1.
-		int[] visitedNodes = new int[numberOfCells];
-		HashMap<Integer,Integer> undroppables = new HashMap<Integer,Integer>();
+		ArrayList<Node> visitedNodes = new ArrayList<Node>();
+		HashMap<Node,Node> undroppables = new HashMap<Node,Node>();
 		int noVisited = 0;
 		//determine the start nodes
 		Node node = nodes.get(random.nextInt(numberOfCells));
@@ -132,18 +134,18 @@ public class GameBoard {
 			boolean isNodeChanged = false;
 			for(int i = 0; i < node.getDegree(); i++)
 			{
-				int ind = node.getConnections().get(i).id;
+				Node dest = node.getConnections().get(i);
 				// if the node is not visited
-				if(visitedNodes[ind] == 0)
+				if(!visitedNodes.contains(dest))
 				{
 					//update number of total visited nodes
 					noVisited++;
 					//mark visited
-					visitedNodes[ind]++;
+					visitedNodes.add(dest);
 					//mark ok to proceed
 					isNodeChanged = true;
 					//mark undroppables
-					undroppables.put(node.id, ind);
+					undroppables.put(node, dest);
 					//record this node, which may be useful in future
 					stack.push(node);
 					//update node
@@ -185,35 +187,27 @@ public class GameBoard {
 			for(int k = 0; k < node.getConnections().size();k++)
 			{
 				Node target = node.getConnections().get(k);
-				//check if the node is marked
-				if(undroppables.containsKey(node.id))
+				if(target == null)
 				{
-					if(undroppables.get(node.id) != target.id && target.getDegree() > 1)
+					continue;
+				}
+				int targetId = target.id;
+				int nodeId = node.id;
+				//check if the node is marked
+				try {
+				if(undroppables.get(node) != target 
+						&& undroppables.get(target) != node)
+				{
+					if(target.getDegree() > 1 && node.getDegree() > 1)
 					{
-						// the edge is not marked
-						// second check : if target will be disconnected
-						// if this edge is dropped
 						node.disconnectFrom(target);
 						hasEdgeDropped = true;
 					}
-				}else
-				{
-					// the node id does not appear in undroppables,
-					// but it doesn't mean that the edges can be dropped
-					// it just means that the node id is in the value set of the hashmap
-					// for if it is not in neither key set nor value set the tree generated
-					// is not a spanning tree, thus the algorithm fails
-					for(Entry<Integer, Integer> pair : undroppables.entrySet())
-					{
-						if(pair.getValue() == node.id && pair.getKey() == target.id && target.getDegree() > 1)
-						{
-							node.disconnectFrom(target);
-							hasEdgeDropped = true;
-							break;
-						}
-					}
 				}
-				
+				}catch(Exception e)
+				{
+					System.out.println();
+				}
 			}
 			//no edge has dropped
 			if(!hasEdgeDropped)
@@ -357,7 +351,7 @@ public class GameBoard {
 		}
 		//randomize Game board
 		int[][] mat = this.generateRandomAdjacencyMatrix();
-		connectNodesAccordingToAdjacencyMatrix(mat);
+//		connectNodesAccordingToAdjacencyMatrix(mat);
 	}
 
 }

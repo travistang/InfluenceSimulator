@@ -8,7 +8,7 @@ public class Node {
 	private final int max_number;
 	private int number;
 	private int owner;
-	private int numberOfConnectedNodes;
+//	private int numberOfConnectedNodes;
 	//reference to other nodes: do not modify it directly!!
 	private Vector<Node> connections;
 	
@@ -48,13 +48,14 @@ public class Node {
 	// functions related to attack
 	public boolean isNotTheSameOwnerAs(Node n)
 	{
-		return this.owner == n.owner;
+		return this.owner != n.owner;
 	}
 
 	// this function order the owner of this cell to attack another node "target"
 	// 
 	public void attack(Node target)
 	{
+
 		if(!isNotTheSameOwnerAs(target) || !canAttack() || !isConnectedTo(target))return;
 		if(target.isNotOwned())
 		{
@@ -146,7 +147,7 @@ public class Node {
 	// this function tries to connect this node to another node n. true is returned on success, false is returned otherwise.
 	public boolean connectTo(Node n)
 	{
-		if(numberOfConnectedNodes == max_connection)
+		if(connections.size() == max_connection)
 			return false;
 		if(isConnectedTo(n))
 			return false;
@@ -158,7 +159,6 @@ public class Node {
 		{
 			n.connectTo(this);
 		}
-		numberOfConnectedNodes++;
 		return true;
 	}
 	public void disconnectFromAllNodes()
@@ -178,7 +178,6 @@ public class Node {
 		}
 		// node n can be disconnected from this node.
 		connections.remove(n);
-		numberOfConnectedNodes--;
 		//bidirectional disconnection
 		if(n.isConnectedTo(this))
 		{
@@ -209,7 +208,6 @@ public class Node {
 		number = 0;
 		owner = 0;
 		// connection issue
-		numberOfConnectedNodes = 0;
 		connections = new Vector<Node>();
 	};
 	

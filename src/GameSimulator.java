@@ -59,20 +59,6 @@ public class GameSimulator {
 	public GameSimulator() {
 		game = new Game(5,70,GAMEPANEL_WIDTH/(int)Cell.CELL_DIMENSION.getWidth());
 		gamePanel = new GamePanel(game.getGameBoard().getNumberOfNodes());
-		gamePanel.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) 
-			{
-				try 
-				{
-					Cell c = (Cell)e.getSource();
-					c.doClick();
-				}catch (Exception e2) 
-				{
-					return;
-				}
-			}
-		});
 		controller = new GameBoardViewController(game,gamePanel);
 		initialize();
 	}
