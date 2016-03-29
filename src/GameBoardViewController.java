@@ -42,6 +42,12 @@ public class GameBoardViewController{
 		//repaint the game panel
 		update();
 	}
+	public void start()
+	{
+		currentPlayer = 1;
+		this.initializePlayerStartingPosition();
+	}
+
 	/**
 	 * initialize player starting positions
 	 * according to the nodes recorded in game
@@ -131,6 +137,8 @@ public class GameBoardViewController{
 		// add mode
 		if(adding)
 		{
+			panel.unhighlight();
+			
 			//6.
 			if(quota == 0)
 			{
@@ -145,6 +153,7 @@ public class GameBoardViewController{
 			//4.
 			node.setNumber(node.getNumber() + 1);
 			quota--;
+			update();
 			return;
 		}
 		int nodeOwner = node.getOwner();
@@ -152,7 +161,10 @@ public class GameBoardViewController{
 		if(selectedCell == null)
 		{
 			if(nodeOwner == currentPlayer)
+			{
 				selectedCell = cell;
+				panel.highlight(cell);
+			}
 			return;
 		}else
 		{
@@ -244,6 +256,8 @@ public class GameBoardViewController{
 
 		}
 		panel.setCellCoordinateMap(cellCoordMap);
+		panel.layCells();
+		
 		currentPlayer = 0;
 	}
 }

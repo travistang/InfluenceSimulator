@@ -25,6 +25,8 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JCheckBox;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 
 public class GameSimulator {
@@ -57,6 +59,20 @@ public class GameSimulator {
 	public GameSimulator() {
 		game = new Game(5,70,GAMEPANEL_WIDTH/(int)Cell.CELL_DIMENSION.getWidth());
 		gamePanel = new GamePanel(game.getGameBoard().getNumberOfNodes());
+		gamePanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) 
+			{
+				try 
+				{
+					Cell c = (Cell)e.getSource();
+					c.doClick();
+				}catch (Exception e2) 
+				{
+					return;
+				}
+			}
+		});
 		controller = new GameBoardViewController(game,gamePanel);
 		initialize();
 	}
@@ -159,6 +175,7 @@ public class GameSimulator {
 		gamePanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		gamePanel.setBounds(118, 0, 502, 426);
 		gamePanel.setPreferredSize(new Dimension(502,426));
+		gamePanel.setSize(502,426);
 		frame.getContentPane().add(gamePanel);
 	}
 }

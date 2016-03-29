@@ -1,5 +1,12 @@
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
 
@@ -12,38 +19,22 @@ import javax.swing.JPanel;
  * -Draw connections between cells
  * 
  *************************************************************/
-public class GamePanel extends JPanel {
+public class GamePanel extends JPanel{
 
 	private Cell[] cells;
 	private GameBoardViewController controller;
 	private HashMap<Cell,Coordinate> cellCoordinateMap;
 	private Coordinate highlightCoordinate;
 	
-	/**
-	 * Draw all cells according to their infos and coordinate
-	 */
-	public void layCells(Graphics graphics)
+	public void draw(Graphics graphics)
 	{
-		this.removeAll();
-		//TODO: remove me
-		int z = 0;
+		int dl = (int)Cell.CELL_DIMENSION.getWidth()/2;
 		for(int w = 0; w < cells.length;w++)
 		{
 			Cell c = cells[w];
-			Coordinate co = cellCoordinateMap.get(c);
-			if(co == null)
-			{
-				System.out.println("Problem with the cellCoordinateMap in GamePanel");
-				return;
-			}
-			this.add(c);
-			c.setLocation(co.x, co.y);
-			c.setPreferredSize(Cell.CELL_DIMENSION);
-			c.setVisible(true);
-			int dl = (int)Cell.CELL_DIMENSION.getWidth()/2;
 			for(Node g : controller.getNode(c).getConnections())
 			{
-
+	
 				Cell cc = controller.getCell(g);
 				Coordinate cood = cellCoordinateMap.get(cc);
 				Coordinate selfcood = cellCoordinateMap.get(c);
@@ -55,20 +46,59 @@ public class GamePanel extends JPanel {
 				
 				graphics.drawLine(cood.x + dl, cood.y + dl, selfcood.x + dl, selfcood.y + dl);
 			}
-			
 		}
 		/**
 		 * Highlighting
 		 */
 		if(highlightCoordinate != null)
 		{
-			graphics.drawRect(highlightCoordinate.x, highlightCoordinate.y, Cell.CELL_DIMENSION.width, Cell.CELL_DIMENSION.height);
+			graphics.setColor(Color.RED);
+			graphics.drawRect(highlightCoordinate.x , highlightCoordinate.y, Cell.CELL_DIMENSION.width + 10, Cell.CELL_DIMENSION.height + 10);
+			graphics.setColor(Color.BLACK);
+		}
+	}
+	/**
+	 * Draw all cells according to their infos and coordinate
+	 */
+	public void layCells()
+	{
+		this.setLayout(null);
+		Insets inset = this.getInsets();
+		for(int w = 0; w < cells.length;w++)
+		{
+			Cell c = cells[w];
+			Coordinate co = cellCoordinateMap.get(c);
+			if(co == null)
+			{
+				System.out.println("Problem with the cellCoordinateMap in GamePanel");
+				return;
+			}
+			this.add(c);
+			c.setBounds(co.x + inset.left, co.y + inset.top,Cell.CELL_DIMENSION.width,Cell.CELL_DIMENSION.height);
+			c.setPreferredSize(Cell.CELL_DIMENSION);
+			c.addActionListener(new ActionListener()
+			{
+				@Override
+				public void actionPerformed(ActionEvent e)
+				{
+					controller.selectCell(c);
+				}
+			});
+			c.setVisible(true);
+
+			
 		}
 		this.revalidate();
 	}
-	public void hightlight(Coordinate c)
+	public void highlight(Coordinate c)
 	{
 		highlightCoordinate = c;
+		// perhaps not necessary
+		revalidate();
+	}
+	public void highlight(Cell c)
+	{
+		highlightCoordinate = cellCoordinateMap.get(c);
 	}
 	public void unhighlight()
 	{
@@ -89,6 +119,8 @@ public class GamePanel extends JPanel {
 				cells[i].setLarge(true);
 			}
 		}
+
+		Cell.setController(controller);
 	}
 	
 	public void setCellCoordinateMap(HashMap<Cell,Coordinate> map)
@@ -103,9 +135,11 @@ public class GamePanel extends JPanel {
 	public void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		layCells(g);
+		draw(g);
+
 	}
 	public GamePanel(int cellnum) {
+
 		cells = new Cell[cellnum];
 		highlightCoordinate = null;
 		for(int i = 0 ; i < cells.length; i++)
@@ -115,5 +149,6 @@ public class GamePanel extends JPanel {
 		cellCoordinateMap = null;
 		controller = null;
 	}
+	
 
 }

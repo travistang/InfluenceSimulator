@@ -3,7 +3,9 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +20,7 @@ import javax.swing.JButton;
 import javax.swing.SwingConstants;
 
 
-public class Cell extends JButton {
+public class Cell extends JButton{
 	//pre-load images
 	private int owner;
 	private int number;
@@ -29,6 +31,7 @@ public class Cell extends JButton {
 	private final URL path = this.getClass().getResource("images/cell");
 	static
 	{
+		controller = null;
 		CELL_DIMENSION = new Dimension(20,20);
 		images = new ArrayList<Icon>();
 		//TODO: preload all cell images to this class
@@ -96,11 +99,6 @@ public class Cell extends JButton {
 	{
 		this.setAppearance(this.owner, this.number);
 	}
-	//helper function to get rid of the scope of the listener
-	private void selectThis()
-	{
-		controller.selectCell(this);
-	}
 	
 	Cell()
 	{
@@ -113,11 +111,10 @@ public class Cell extends JButton {
 		this.addActionListener(new ActionListener()
 		{
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO complete logic to handle mouse clicks on cell
-				selectThis();
+			public void actionPerformed(ActionEvent e)
+			{
+				e.getSource();
 			}
 		});
 	}
-	
 }

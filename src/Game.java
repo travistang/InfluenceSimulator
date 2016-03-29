@@ -37,7 +37,7 @@ public class Game {
 	public void start()
 	{
 		started = true;
-		controller.initializePlayerStartingPosition();
+		controller.start();
 	}
 	
 	public int[] getPlayerStartPositions()
