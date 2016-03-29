@@ -61,7 +61,7 @@ public class Cell extends JButton {
 	}
 	
 	
-	public void setappearance(int owner, int number)
+	public void setAppearance(int owner, int number)
 	{
 		this.owner = owner;
 		this.number = number;
@@ -94,7 +94,7 @@ public class Cell extends JButton {
 	}
 	public void reload()
 	{
-		this.setappearance(this.owner, this.number);
+		this.setAppearance(this.owner, this.number);
 	}
 	//helper function to get rid of the scope of the listener
 	private void selectThis()
@@ -108,7 +108,7 @@ public class Cell extends JButton {
 		isLarge = false;
 		controller = null;
 		this.setFont(new Font("Arial", Font.PLAIN,8));
-		this.setappearance(0,0);
+		this.setAppearance(0,0);
 		this.setPreferredSize(CELL_DIMENSION);
 		this.addActionListener(new ActionListener()
 		{

@@ -244,7 +244,7 @@ public class GameBoard {
 		for(int i = 0; i < mat.length; i++)
 		{
 				
-				if( i != 0 && (i % margin) != 0 && (i % margin) != margin - 1)
+				if( i != 0 && (i % margin) != 0 && (i % margin) != (margin - 1))
 				{
 //					//not in margin, in upper column
 					if(i % margin % 2 != 0)
@@ -287,7 +287,15 @@ public class GameBoard {
 						}
 					}else // right margin
 					{
+				
 						int [] indicies = {i-1, i - rowLen, i+ rowLen,i + rowLen - 1};
+						
+						// a small fix
+						if(margin % 2 != 0)
+						{
+							indicies[3] = i - rowLen - 1;
+						}
+						
 						for(int ind : indicies)
 						{
 							if(ind >= 0 && ind < mat.length)

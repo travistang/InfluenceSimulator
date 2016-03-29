@@ -8,10 +8,11 @@ import java.util.Random;
  *
  */
 public class Game {
+	private boolean started;
 	private GameBoard gameboard;
 	private GameBoardViewController controller;
 	private Player[] players;
-	private Node[] playerStartPositions;
+	private int[] playerStartPositions;
 	
 	public GameBoard getGameBoard()
 	{
@@ -29,7 +30,20 @@ public class Game {
 		}
 		return players[index];
 	}
-
+	public boolean hasStarted()
+	{
+		return started;
+	}
+	public void start()
+	{
+		started = true;
+		controller.initializePlayerStartingPosition();
+	}
+	
+	public int[] getPlayerStartPositions()
+	{
+		return playerStartPositions;
+	}
 	public int getNumberOfPlayers()
 	{
 		return players.length;
@@ -45,7 +59,13 @@ public class Game {
 		controller.setGame(this);
 	}
 	
-	//initialize player starting positions
+	/**
+	 * initialize player starting positions
+	 * 
+	 * because this is a model class and I don't want to change other models here
+	 * The positions will be saved instead of other references
+	 * The controller should make the changes.
+	 */
 	public void initializePlayerStartingPosition()
 	{
 		Random random = new Random();
@@ -53,8 +73,8 @@ public class Game {
 		for(int i = 0; i < players.length; i++)
 		{
 			int pos = random.nextInt(gameboard.getNumberOfNodes());
-			if(!drawn.contains(pos));
-			playerStartPositions[i] = gameboard.getNodes().get(pos);
+			if(!drawn.contains(pos))
+				playerStartPositions[i] = pos;
 			drawn.add(pos);
 		}
 	}
@@ -62,10 +82,11 @@ public class Game {
 	// rowLen means number of cells in a row
 	public Game(int numplayers,int numcells,int rowLen)
 	{
+		started = false;
 		gameboard = new GameBoard(numcells);
 		controller = null;
 		players = new Player[numplayers];
-		playerStartPositions = new Node[numplayers];
+		playerStartPositions = new int[numplayers];
 		for(int i = 0; i < numplayers; i++)
 		{
 			players[i] = new Player();

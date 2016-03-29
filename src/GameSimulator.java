@@ -55,7 +55,7 @@ public class GameSimulator {
 	 * Create the application.
 	 */
 	public GameSimulator() {
-		game = new Game(5,130,GAMEPANEL_WIDTH/(int)Cell.CELL_DIMENSION.getWidth());
+		game = new Game(5,70,GAMEPANEL_WIDTH/(int)Cell.CELL_DIMENSION.getWidth());
 		gamePanel = new GamePanel(game.getGameBoard().getNumberOfNodes());
 		controller = new GameBoardViewController(game,gamePanel);
 		initialize();
@@ -84,20 +84,33 @@ public class GameSimulator {
 		});
 		
 		JButton startButton = new JButton("Start");
+		startButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(!game.hasStarted())
+				{
+					game.start();
+				}
+			}
+		});
 		
 		JCheckBox chckbxPlayer_1 = new JCheckBox("Player 1");
+		chckbxPlayer_1.setSelected(true);
 		chckbxPlayer_1.setForeground(Color.BLUE);
 		
 		JCheckBox chckbxPlayer_2 = new JCheckBox("Player 2");
+		chckbxPlayer_2.setSelected(true);
 		chckbxPlayer_2.setForeground(Color.GREEN);
 		
 		JCheckBox chckbxPlayer_3 = new JCheckBox("Player 3");
+		chckbxPlayer_3.setSelected(true);
 		chckbxPlayer_3.setForeground(Color.MAGENTA);
 		
 		JCheckBox chckbxPlayer_4 = new JCheckBox("Player 4");
+		chckbxPlayer_4.setSelected(true);
 		chckbxPlayer_4.setForeground(Color.RED);
 		
 		JCheckBox chckbxPlayer_5 = new JCheckBox("Player 5");
+		chckbxPlayer_5.setSelected(true);
 		chckbxPlayer_5.setForeground(Color.YELLOW);
 		GroupLayout gl_controlPanel = new GroupLayout(controlPanel);
 		gl_controlPanel.setHorizontalGroup(

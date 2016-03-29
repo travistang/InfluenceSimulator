@@ -38,18 +38,43 @@ public class GameBoardViewController{
 	public void reset()
 	{
 		game.getGameBoard().reset();
-		
+		initializePlayerStartingPosition();
 		//repaint the game panel
-		panel.repaint();
+		update();
 	}
 	/**
-	 * Update game board status, game panels and everything
+	 * initialize player starting positions
+	 * according to the nodes recorded in game
+	 */
+	public void initializePlayerStartingPosition()
+	{
+		int[] sp = game.getPlayerStartPositions();
+		for(int i = 0; i < sp.length; i++)
+		{
+			//update info in gameboard
+			Node n = game.getGameBoard().getNodes().get(sp[i]);
+			n.setOwner(i + 1);
+			n.setNumber(2);
+		}
+		update();
+	}
+	private void setCellAppearence(Cell c,int owner, int number)
+	{
+		if(c != null)
+		{
+			c.setAppearance(owner, number);
+		}
+	}
+	/**
+	 * Update game panels
 	 */
 	public void update()
 	{
 		for(int i = 0; i < game.getGameBoard().getNodes().size();i++)
 		{
-			
+			Node n = game.getGameBoard().getNodes().get(i);
+			Cell c = this.getCell(n);
+			c.setAppearance(n.getOwner(), n.getNumber());
 		}
 	}
 	/**
@@ -169,6 +194,7 @@ public class GameBoardViewController{
 	{
 		// construct all mappings here
 		this.game = game;
+		game.setController(this);
 		panel = dp;
 		panel.setController(this);
 		cellNodeMap = new HashMap<Cell,Node>();
