@@ -104,6 +104,8 @@ public class GamePanel extends JPanel{
 	public void unhighlight()
 	{
 		highlightCoordinate = null;
+		revalidate();
+		repaint();
 	}
 	public Cell[] getCells()
 	{

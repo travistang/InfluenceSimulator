@@ -61,8 +61,6 @@ public class GameBoardViewController{
 			//update info in gameboard
 			Node n = game.getGameBoard().getNodes().get(sp[i]);
 			n.setOwner(i + 1);
-			//TODO: remove me
-
 			n.setNumber(2);
 		}
 		update();
@@ -173,8 +171,15 @@ public class GameBoardViewController{
 			{
 				// the connectivity would be checked when attack
 				// so no need to check again
-				target.attack(node);
-				panel.unhighlight();
+				boolean result = target.attack(node);
+				if(result)
+				{
+					panel.highlight(getCell(node));
+					selectedCell = getCell(node);
+				}else
+				{
+					panel.unhighlight();	
+				}
 			}else
 			{
 				selectedCell = cell;

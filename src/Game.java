@@ -68,19 +68,14 @@ public class Game {
 	 */
 	public void initializePlayerStartingPosition()
 	{
-		//TODO: restore me when finished testing
-//		Random random = new Random();
-//		ArrayList<Integer> drawn = new ArrayList<Integer>();
-//		for(int i = 0; i < players.length; i++)
-//		{
-//			int pos = random.nextInt(gameboard.getNumberOfNodes());
-//			if(!drawn.contains(pos))
-//				playerStartPositions[i] = pos;
-//			drawn.add(pos);
-//		}
+		Random random = new Random();
+		ArrayList<Integer> drawn = new ArrayList<Integer>();
 		for(int i = 0; i < players.length; i++)
 		{
-			playerStartPositions[i] = i;
+			int pos = random.nextInt(gameboard.getNumberOfNodes());
+			if(!drawn.contains(pos))
+				playerStartPositions[i] = pos;
+			drawn.add(pos);
 		}
 	}
 	

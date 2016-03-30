@@ -51,12 +51,15 @@ public class Node {
 		return this.owner != n.owner;
 	}
 
-	// this function order the owner of this cell to attack another node "target"
-	// 
-	public void attack(Node target)
+	/**
+	 * this function order the owner of this cell to attack another node "target"
+	 * @param target node to be attacked
+	 * @return true if the target cell is captured. False otherwise.
+	 */
+	public boolean attack(Node target)
 	{
 
-		if(!isNotTheSameOwnerAs(target) || !canAttack() || !isConnectedTo(target))return;
+		if(!isNotTheSameOwnerAs(target) || !canAttack() || !isConnectedTo(target))return false;
 		if(target.isNotOwned())
 		{
 			//maximum cell moving to a cell that is owned by nobody.
@@ -71,12 +74,11 @@ public class Node {
 			}
 			// since the target cell is not occupied. The ownership of the target cell is changed for sure.
 			target.setOwner(owner);
-			
+			return true;
 		}else
 		{
-			//TODO: dealing with attack sequence
+
 			int dif = this.number - target.getNumber();
-			//TODO: how to generate winning chances following certain distributions?
 			float prob = 0;
 			switch(Math.abs(dif))
 			{
@@ -106,6 +108,7 @@ public class Node {
 				willWin = !willWin;
 			}
 			
+
 			if(willWin)
 			{
 				this.number += 1;
@@ -119,6 +122,7 @@ public class Node {
 			{
 				enemyNumber -= selfNumber;
 				target.setNumber(enemyNumber);
+				return false;
 			}else if(selfNumber == enemyNumber)
 			{
 				//draw: 1 to 1
@@ -128,6 +132,7 @@ public class Node {
 					target.setOwner(this.owner);
 				}
 				this.number = 1;
+				return true;
 			}else
 			{
 				target.setOwner(this.owner);
@@ -135,16 +140,15 @@ public class Node {
 				// handling overflow
 				if(dif > target.max_number)
 				{
-					//TODO: test this
 					target.setNumber(target.max_number);
 					this.setNumber( 1 + dif - target.max_number);
 				}else
 				{
 					target.setNumber(dif);
 				}
-			}
-			this.setNumber(1);
-			
+				this.setNumber(1);
+				return true;
+			}			
 		}
 	}
 	// this function tells whether the cell itself can attack the other cell
