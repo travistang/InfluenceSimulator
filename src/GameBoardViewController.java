@@ -1,3 +1,5 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
@@ -57,10 +59,64 @@ public class GameBoardViewController{
 	}
 	public void start()
 	{
+		if(game.getNumberOfPlayers() < 1)
+		{
+			System.out.println("Error with number of players in game");
+		}
 		currentPlayer = 1;
 		this.initializePlayerStartingPosition();
+		//handling start logic
+		if(proceedBtn == null)
+		{
+			System.out.println("procced button is not associated to controller.");
+			return;
+		}
+		if(stateLabel == null)
+		{
+			System.out.println("State label is not associated to controller.");
+			return;
+		}
+		//enable proceed button
+		proceedBtn.setEnabled(true);
+		
+		reportOnStateLabel();
+		proceedBtn.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(!adding)
+				{
+					quota = game.getPlayer(currentPlayer).getNumberOfCellsOwned();
+					stateLabel.setVisible(true);
+				}else
+				{
+					currentPlayer = (currentPlayer + 1) % game.getNumberOfPlayers();
+				}
+				adding = !adding;
+				reportOnStateLabel();
+			}
+			
+		});
 	}
 
+	private void reportOnStateLabel()
+	{
+		if(!stateLabel.isVisible())
+			stateLabel.setVisible(true);
+		String msg = null;
+		if(adding)
+		{
+			if(quota > 0)
+				msg = "Player " + currentPlayer + " adding. " + quota + " move(s) left";
+			else
+				msg = "Player " + currentPlayer + "has no quotas left.";
+		}else
+		{
+			msg = "Player " + currentPlayer + "'s move";
+		}
+		msg = "<html>" + msg + "</html>";
+		stateLabel.setText(msg);
+	}
 	/**
 	 * initialize player starting positions
 	 * according to the nodes recorded in game
@@ -90,11 +146,20 @@ public class GameBoardViewController{
 	 */
 	public void update()
 	{
+		//clear player owned cells
+		for(int i = 0; i < game.getNumberOfPlayers(); i++)
+		{
+			game.getPlayer(i + 1).removeAllCells();
+		}
 		for(int i = 0; i < game.getGameBoard().getNodes().size();i++)
 		{
 			Node n = game.getGameBoard().getNodes().get(i);
 			Cell c = this.getCell(n);
 			c.setAppearance(n.getOwner(), n.getNumber());
+			
+			//update player statistics
+			if(n.getOwner() > 0)
+				game.getPlayer(n.getOwner()).addCells(n);
 		}
 	}
 	/**
@@ -167,6 +232,8 @@ public class GameBoardViewController{
 			//4.
 			node.setNumber(node.getNumber() + 1);
 			quota--;
+			//show quota(s) left
+			reportOnStateLabel();
 			update();
 			return;
 		}

@@ -14,7 +14,15 @@ public class Player {
 	{
 		ownedCells.add(n);
 	}
-	
+	private int getTotalNumber()
+	{
+		int total = 0;
+		for(int i = 0; i < ownedCells.size(); i++)
+		{
+			total += ownedCells.get(i).getNumber();
+		}
+		return total;
+	}
 	public void removeCells(Node n)
 	{
 		if(ownedCells.contains(n))
@@ -22,7 +30,10 @@ public class Player {
 			ownedCells.remove(n);
 		}
 	}
-
+	public void removeAllCells()
+	{
+		ownedCells.clear();
+	}
 	public boolean isLoss()
 	{
 		return ownedCells.size() == 0;

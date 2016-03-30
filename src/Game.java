@@ -22,13 +22,18 @@ public class Game {
 	{
 		return players;
 	}
+	/**
+	 * The player number is 1-based !!
+	 * @param index
+	 * @return reference of the Player or null if index is invalid
+	 */
 	public Player getPlayer(int index)
 	{
-		if(index >= players.length || index < 0)
+		if(index > players.length || index <= 0)
 		{
 			return null;
 		}
-		return players[index];
+		return players[index - 1];
 	}
 	public boolean hasStarted()
 	{
