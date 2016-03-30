@@ -118,12 +118,30 @@ public class Node {
 			if(selfNumber - enemyNumber < 0)
 			{
 				enemyNumber -= selfNumber;
+				target.setNumber(enemyNumber);
+			}else if(selfNumber == enemyNumber)
+			{
+				//draw: 1 to 1
+				target.setNumber(1);
+				if(willWin)
+				{
+					target.setOwner(this.owner);
+				}
+				this.number = 1;
 			}else
 			{
-				//win 
-				selfNumber -= enemyNumber;
-				target.setNumber(selfNumber);
 				target.setOwner(this.owner);
+				dif = selfNumber - enemyNumber;
+				// handling overflow
+				if(dif > target.max_number)
+				{
+					//TODO: test this
+					target.setNumber(target.max_number);
+					this.setNumber( 1 + dif - target.max_number);
+				}else
+				{
+					target.setNumber(dif);
+				}
 			}
 			this.setNumber(1);
 			

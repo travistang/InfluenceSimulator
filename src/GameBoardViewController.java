@@ -51,6 +51,7 @@ public class GameBoardViewController{
 	/**
 	 * initialize player starting positions
 	 * according to the nodes recorded in game
+	 * update() will be called at the end
 	 */
 	public void initializePlayerStartingPosition()
 	{

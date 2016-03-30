@@ -95,6 +95,7 @@ public class GamePanel extends JPanel{
 		highlightCoordinate = c;
 		// perhaps not necessary
 		revalidate();
+		repaint();
 	}
 	public void highlight(Cell c)
 	{
