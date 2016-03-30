@@ -27,6 +27,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JCheckBox;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.JLabel;
 
 
 public class GameSimulator {
@@ -36,6 +37,8 @@ public class GameSimulator {
 	private GamePanel gamePanel;
 	private GameBoard gameboard;
 	private GameBoardViewController controller;
+	private JLabel stateLabel;
+	private JButton btnProceed;
 	private final int GAMEPANEL_WIDTH = 500;
 	/**
 	 * Launch the application.
@@ -60,7 +63,11 @@ public class GameSimulator {
 		game = new Game(5,70,GAMEPANEL_WIDTH/(int)Cell.CELL_DIMENSION.getWidth());
 		gamePanel = new GamePanel(game.getGameBoard().getNumberOfNodes());
 		controller = new GameBoardViewController(game,gamePanel);
+		//TODO: set label here
 		initialize();
+		//associate stateLabel and proceedBtn after initialization
+		controller.setStateLabel(stateLabel);
+		controller.setProceedBtn(btnProceed);
 	}
 
 	/**
@@ -114,10 +121,18 @@ public class GameSimulator {
 		JCheckBox chckbxPlayer_5 = new JCheckBox("Player 5");
 		chckbxPlayer_5.setSelected(true);
 		chckbxPlayer_5.setForeground(Color.YELLOW);
+		
+		btnProceed = new JButton("Proceed");
+		btnProceed.setEnabled(false);
+		
+		stateLabel = new JLabel("");
+		stateLabel.setEnabled(true);
+		stateLabel.setVisible(false);
+		
 		GroupLayout gl_controlPanel = new GroupLayout(controlPanel);
 		gl_controlPanel.setHorizontalGroup(
-			gl_controlPanel.createParallelGroup(Alignment.LEADING)
-				.addComponent(chckbxPlayer_1, GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
+			gl_controlPanel.createParallelGroup(Alignment.TRAILING)
+				.addComponent(chckbxPlayer_1, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
 				.addGroup(gl_controlPanel.createSequentialGroup()
 					.addComponent(chckbxPlayer_2, GroupLayout.PREFERRED_SIZE, 116, GroupLayout.PREFERRED_SIZE)
 					.addContainerGap())
@@ -130,11 +145,18 @@ public class GameSimulator {
 				.addGroup(gl_controlPanel.createSequentialGroup()
 					.addComponent(chckbxPlayer_5, GroupLayout.PREFERRED_SIZE, 116, GroupLayout.PREFERRED_SIZE)
 					.addContainerGap())
-				.addGroup(Alignment.TRAILING, gl_controlPanel.createSequentialGroup()
+				.addGroup(gl_controlPanel.createSequentialGroup()
 					.addGroup(gl_controlPanel.createParallelGroup(Alignment.TRAILING)
 						.addComponent(startButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
 						.addComponent(resetButton, GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE))
 					.addContainerGap())
+				.addGroup(gl_controlPanel.createSequentialGroup()
+					.addComponent(btnProceed, GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
+					.addContainerGap())
+				.addGroup(Alignment.LEADING, gl_controlPanel.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(stateLabel, GroupLayout.PREFERRED_SIZE, 102, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(14, Short.MAX_VALUE))
 		);
 		gl_controlPanel.setVerticalGroup(
 			gl_controlPanel.createParallelGroup(Alignment.LEADING)
@@ -153,7 +175,11 @@ public class GameSimulator {
 					.addComponent(resetButton)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(startButton)
-					.addContainerGap(155, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(stateLabel)
+					.addGap(9)
+					.addComponent(btnProceed)
+					.addContainerGap(95, Short.MAX_VALUE))
 		);
 		controlPanel.setLayout(gl_controlPanel);
 

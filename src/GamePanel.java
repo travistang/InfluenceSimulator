@@ -99,7 +99,7 @@ public class GamePanel extends JPanel{
 	}
 	public void highlight(Cell c)
 	{
-		highlightCoordinate = cellCoordinateMap.get(c);
+		highlight(cellCoordinateMap.get(c));
 	}
 	public void unhighlight()
 	{

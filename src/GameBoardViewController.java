@@ -3,6 +3,9 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.swing.JButton;
+import javax.swing.JLabel;
+
 public class GameBoardViewController{
 
 //	private GameBoard gameboard;
@@ -15,7 +18,17 @@ public class GameBoardViewController{
 	// adding mode
 	private boolean adding;
 	private int quota;
+	private JLabel stateLabel;
+	private JButton proceedBtn;
 	
+	public void setStateLabel(JLabel lbl)
+	{
+		stateLabel = lbl;
+	}
+	public void setProceedBtn(JButton btn)
+	{
+		proceedBtn = btn;
+	}
 	public Node getNode(Cell cell)
 	{
 		return cellNodeMap.get(cell);
