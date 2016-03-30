@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -31,6 +32,7 @@ public class GameBoardViewController{
 	{
 		proceedBtn = btn;
 	}
+
 	public Node getNode(Cell cell)
 	{
 		return cellNodeMap.get(cell);
@@ -52,6 +54,8 @@ public class GameBoardViewController{
 	//restore default
 	public void reset()
 	{
+		currentPlayer = 1;
+		panel.unhighlight();
 		game.getGameBoard().reset();
 		initializePlayerStartingPosition();
 		//repaint the game panel
@@ -83,14 +87,36 @@ public class GameBoardViewController{
 		proceedBtn.addActionListener(new ActionListener()
 		{
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) 
+			{
+				//un-select cell from previous round 
+				selectedCell = null;
 				if(!adding)
 				{
 					quota = game.getPlayer(currentPlayer).getNumberOfCellsOwned();
 					stateLabel.setVisible(true);
 				}else
 				{
-					currentPlayer = (currentPlayer + 1) % game.getNumberOfPlayers();
+					//handle remaining quota
+					if(quota != 0)
+					{
+						Random random = new Random();
+						while(quota > 0 && ! game.getPlayer(currentPlayer).isAllCellFull())
+						{
+							game.getPlayer(currentPlayer).drawNode(false).add();
+						}
+					}
+					
+					//current player transition
+					currentPlayer++;
+					if(currentPlayer > game.getNumberOfPlayers())
+					{
+						currentPlayer = 1;
+					}
+					if(game.getPlayer(currentPlayer).isLoss())
+					{
+						
+					}
 				}
 				adding = !adding;
 				reportOnStateLabel();
@@ -98,12 +124,16 @@ public class GameBoardViewController{
 			
 		});
 	}
-
+	/**
+	 * Responsible for updating the message on stateLabel
+	 * according to the game status.
+	 */
 	private void reportOnStateLabel()
 	{
 		if(!stateLabel.isVisible())
 			stateLabel.setVisible(true);
 		String msg = null;
+
 		if(adding)
 		{
 			if(quota > 0)
@@ -113,6 +143,11 @@ public class GameBoardViewController{
 		}else
 		{
 			msg = "Player " + currentPlayer + "'s move";
+		}
+		
+		if(game.hasEnded())
+		{
+			msg = "Player " + game.getWinner() + " wins";
 		}
 		msg = "<html>" + msg + "</html>";
 		stateLabel.setText(msg);
@@ -124,6 +159,11 @@ public class GameBoardViewController{
 	 */
 	public void initializePlayerStartingPosition()
 	{
+		if(game.getNumberOfPlayers() > game.getGameBoard().getNumberOfNodes())
+		{
+			System.out.println("Insufficient number of nodes for initialization");
+			return;
+		}
 		int[] sp = game.getPlayerStartPositions();
 		for(int i = 0; i < sp.length; i++)
 		{
@@ -187,9 +227,9 @@ public class GameBoardViewController{
 	{
 		return quota;
 	}
-	public boolean isLargeCell(int i)
+	public boolean isLargeCell(Cell c)
 	{
-		return game.getGameBoard().getLargeCellsList().contains(i);
+		return getNode(c).getMaxNumber() == 12;
 	}
 	/**
 	 * This function handles cells selection rule
@@ -216,6 +256,9 @@ public class GameBoardViewController{
 		// add mode
 		if(adding)
 		{
+			//reset selected cell to prepare for the next round
+			selectedCell = null;
+			
 			panel.unhighlight();
 			
 			//6.
@@ -230,8 +273,11 @@ public class GameBoardViewController{
 				return;
 			}
 			//4.
-			node.setNumber(node.getNumber() + 1);
-			quota--;
+			if(node.getOwner() == currentPlayer)
+			{
+				node.setNumber(node.getNumber() + 1);
+				quota--;
+			}
 			//show quota(s) left
 			reportOnStateLabel();
 			update();
@@ -241,8 +287,11 @@ public class GameBoardViewController{
 		//no cell is selected previously
 		if(selectedCell == null)
 		{
-			panel.highlight(cell);
-			selectedCell = cell;
+			if(currentPlayer == node.getOwner())
+			{
+				panel.highlight(cell);
+				selectedCell = cell;
+			}
 		}else
 		{
 			Node target = getNode(selectedCell);
@@ -258,7 +307,8 @@ public class GameBoardViewController{
 					selectedCell = getCell(node);
 				}else
 				{
-					panel.unhighlight();	
+					panel.unhighlight();
+					selectedCell = null;
 				}
 			}else
 			{
@@ -267,6 +317,11 @@ public class GameBoardViewController{
 			}
 		}
 		update();
+		//check winning condition
+		if(game.hasEnded())
+		{
+			this.reportOnStateLabel();
+		}
 	}
 	GameBoardViewController(Game game, GamePanel dp)
 	{
@@ -274,7 +329,7 @@ public class GameBoardViewController{
 		this.game = game;
 		game.setController(this);
 		panel = dp;
-		panel.setController(this);
+
 		cellNodeMap = new HashMap<Cell,Node>();
 		HashMap<Cell,Coordinate> cellCoordMap = new HashMap<Cell,Coordinate>();
 		if(game.getGameBoard().getNumberOfNodes() != panel.getCells().length)
@@ -288,6 +343,8 @@ public class GameBoardViewController{
 		{
 			cellNodeMap.put(panel.getCells()[i++],n);
 		}
+		//associate panel controller to this only after cellNodeMap construction
+		panel.setController(this);
 		
 		/**
 		 * Construct cellCoordMap for gamePanel

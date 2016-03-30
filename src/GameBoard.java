@@ -9,7 +9,7 @@ import java.util.Stack;
 public class GameBoard {
 	// Node is used here because all the instances of nodes will be contained in GameBoard
 	private final ArrayList<Node> nodes;
-	private final ArrayList<Integer> largeCells;
+//	private final ArrayList<Integer> largeCells;
 	private final int numberOfCells;
 	public static final float LARGE_CELL_RATIO = 0.25f;
 	//functions related to adjacency matrix
@@ -318,10 +318,7 @@ public class GameBoard {
 	{
 		return nodes;
 	};
-	public ArrayList<Integer> getLargeCellsList()
-	{
-		return largeCells;
-	}
+
 	/**
 	 *  reset numbers and owners of every cell to 0 (unoccupied)
 	 *  The position of the large cells will retain
@@ -338,16 +335,11 @@ public class GameBoard {
 	{
 		numberOfCells = numCells;
 		nodes = new ArrayList<Node>();
-		largeCells = new ArrayList<Integer>();
 		Random random = new Random();
 		
 		for(int i = 0; i < numCells; i++)
 		{
 			nodes.add(new Node());
-			if(random.nextFloat() < LARGE_CELL_RATIO) // generate large cells with 1/4 probability
-			{
-				largeCells.add(i);
-			}
 		}
 		//randomize Game board
 		int[][] mat = this.generateRandomAdjacencyMatrix();

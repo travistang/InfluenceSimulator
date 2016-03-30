@@ -18,9 +18,39 @@ public class Game {
 	{
 		return gameboard;
 	}
+	public int[] getNumberOfCellsOwnedStatistics()
+	{
+		int[] res = new int[players.length];
+		for(int i = 0; i < 5; i++)
+		{
+			res[i] = players[i].getNumberOfCellsOwned();
+		}
+		return res;
+	}
+	
 	public Player[] getPlayers()
 	{
 		return players;
+	}
+	public boolean hasEnded()
+	{
+		int effectivePlayer = 0;
+		for(Player p : players)
+		{
+			if(!p.isLoss())
+			{
+				effectivePlayer++;
+			}
+		}
+		return effectivePlayer <= 1 && started;
+	}
+	public Player getWinner()
+	{
+		if(!hasEnded()) return null;
+		for(Player p : players)
+			if(!p.isLoss())
+				return p;
+		return null;
 	}
 	/**
 	 * The player number is 1-based !!
@@ -44,7 +74,7 @@ public class Game {
 		started = true;
 		controller.start();
 	}
-	
+
 	public int[] getPlayerStartPositions()
 	{
 		return playerStartPositions;

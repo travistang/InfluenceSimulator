@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Random;
 public class Player {
 	public final int id;
 	private static int numPlayers;
@@ -13,6 +14,42 @@ public class Player {
 	public void addCells(Node n)
 	{
 		ownedCells.add(n);
+	}
+	public boolean isAllCellFull()
+	{
+		for(Node c : ownedCells)
+		{
+			if(!c.isFull())
+				return false;
+		}
+		return true;
+	}
+	//draw a node, specify if a fulled cell should be drawn by passing the flag into it.
+	public Node drawNode(boolean full)
+	{
+		if(full && getNonFullCells().size() == getNumberOfCellsOwned())
+			return null;
+		if(!full && getNonFullCells().size() == 0)
+			return null;
+		
+		Random random = new Random();
+
+		while(true)
+		{
+			Node node = ownedCells.get(random.nextInt(ownedCells.size()));
+			if((node.isFull() && full) || (!node.isFull() && !full))
+				return node;
+		}
+	}
+	public ArrayList<Node> getNonFullCells()
+	{
+		ArrayList<Node> list = new ArrayList<Node>();
+		for(Node n : ownedCells)
+		{
+			if(!n.isFull())
+				list.add(n);
+		}
+		return list;
 	}
 	private int getTotalNumber()
 	{

@@ -117,7 +117,7 @@ public class GamePanel extends JPanel{
 		this.controller = controller;
 		for(int i = 0; i < cells.length; i++)
 		{
-			if(controller.isLargeCell(i))
+			if(controller.isLargeCell(cells[i]))
 			{
 				cells[i].setLarge(true);
 			}

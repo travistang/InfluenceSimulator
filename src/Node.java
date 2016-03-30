@@ -18,7 +18,10 @@ public class Node {
 	{
 		return owner;
 	};
-	
+	public boolean isFull()
+	{
+		return number == max_number;
+	}
 	public void setOwner(int owner)
 	{
 		this.owner = owner;
@@ -50,7 +53,29 @@ public class Node {
 	{
 		return this.owner != n.owner;
 	}
-
+	public void add()
+	{
+		if(!isFull())
+			number++;
+	}
+	public void sub()
+	{
+		if(number > 1)
+			number --;
+	}
+	public void fill()
+	{
+		number = max_number;
+	}
+	public void empty()
+	{
+		if(owner == 0)
+			number = 1;
+		else
+			number = 0;
+			
+	}
+	
 	/**
 	 * this function order the owner of this cell to attack another node "target"
 	 * @param target node to be attacked
@@ -79,28 +104,9 @@ public class Node {
 		{
 
 			int dif = this.number - target.getNumber();
-			float prob = 0;
-			switch(Math.abs(dif))
-			{
-				case 0:
-					prob = 0.5f;
-					break;
-				case 1:
-					prob = 0.75f;
-					break;
-				case 2:
-					prob = 0.875f;
-					break;
-				case 3:
-					prob = 0.9375f;
-					break;
-				case 4:
-					prob = 0.96875f;
-					break;
-				default:
-					prob = 1;
-					break;
-			}
+			
+			float prob = (float)(this.number)/(this.number + target.number);
+			
 			//generate result based on probability
 			boolean willWin = Math.random() < prob;
 			if(dif < 0)
@@ -117,21 +123,29 @@ public class Node {
 			int selfNumber = this.number - 1
 				,enemyNumber = target.getNumber();
 			
+			//if the target cell has number 1
+			//the attack must succeed
+			if(enemyNumber == 1)
+			{
+				
+			}
 			//loss
 			if(selfNumber - enemyNumber < 0)
 			{
 				enemyNumber -= selfNumber;
 				target.setNumber(enemyNumber);
+				this.setNumber(1);
 				return false;
 			}else if(selfNumber == enemyNumber)
 			{
 				//draw: 1 to 1
+				//ok
 				target.setNumber(1);
 				if(willWin)
 				{
 					target.setOwner(this.owner);
 				}
-				this.number = 1;
+				this.setNumber(1);
 				return true;
 			}else
 			{
