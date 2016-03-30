@@ -39,6 +39,8 @@ public class GameSimulator {
 	private GameBoardViewController controller;
 	private JLabel stateLabel;
 	private JButton btnProceed;
+	private JButton resetButton;
+	private JButton startButton;
 	private final int GAMEPANEL_WIDTH = 500;
 	/**
 	 * Launch the application.
@@ -85,20 +87,24 @@ public class GameSimulator {
 		controlPanel.setBounds(0, 0, 118, 426);
 		frame.getContentPane().add(controlPanel);
 		
-		JButton resetButton = new JButton("Reset");
+		resetButton = new JButton("Reset");
 		resetButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				controller.reset();
+				startButton.setEnabled(true);
+				resetButton.setEnabled(false);
 			}
 		});
 		
-		JButton startButton = new JButton("Start");
+		startButton = new JButton("Start");
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(!game.hasStarted())
 				{
 					game.start();
 				}
+				startButton.setEnabled(false);
+				resetButton.setEnabled(true);
 			}
 		});
 		

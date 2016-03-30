@@ -1,12 +1,6 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-/**
- * Class representing the whole game.
- * It includes the interaction of 
- * @author Travis
- *
- */
 public class Game {
 	private boolean started;
 	private GameBoard gameboard;

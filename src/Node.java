@@ -46,6 +46,7 @@ public class Node {
 	}
 	public int getDegree()
 	{
+		
 		return connections.size();
 	}
 	// functions related to attack

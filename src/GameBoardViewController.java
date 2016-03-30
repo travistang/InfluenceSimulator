@@ -356,7 +356,6 @@ public class GameBoardViewController{
 		int len = (int)Cell.CELL_DIMENSION.getWidth()*2;
 		for(int y = len/2; y < cellsPerCol*len + len/2; y+=len)
 		{
-			System.out.println(z++);
 			if(i == panel.getCells().length)
 			{
 				break;
