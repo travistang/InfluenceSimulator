@@ -57,9 +57,10 @@ public class GameBoardViewController{
 		currentPlayer = 1;
 		panel.unhighlight();
 		game.getGameBoard().reset();
+		
+		adding = false;
+		
 		initializePlayerStartingPosition();
-		//repaint the game panel
-		update();
 	}
 	public void start()
 	{
@@ -253,6 +254,10 @@ public class GameBoardViewController{
 			System.out.println("incomplete cell-node mapping");
 			return;
 		}
+		
+		//do not allow the selection to proceed if the game isn't even started.
+		if(!game.hasStarted())return;
+
 		// add mode
 		if(adding)
 		{

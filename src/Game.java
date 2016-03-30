@@ -68,7 +68,15 @@ public class Game {
 		started = true;
 		controller.start();
 	}
-
+	public void reset()
+	{
+		started = false;
+		for(Player p : players)
+		{
+			p.removeAllCells();
+		}
+		controller.reset();
+	}
 	public int[] getPlayerStartPositions()
 	{
 		return playerStartPositions;

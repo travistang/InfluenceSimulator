@@ -88,9 +88,11 @@ public class GameSimulator {
 		frame.getContentPane().add(controlPanel);
 		
 		resetButton = new JButton("Reset");
+		resetButton.setEnabled(false);
+
 		resetButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				controller.reset();
+				game.reset();
 				startButton.setEnabled(true);
 				resetButton.setEnabled(false);
 			}
