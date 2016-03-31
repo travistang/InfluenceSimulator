@@ -34,9 +34,7 @@ public class Cell extends JButton{
 		controller = null;
 		CELL_DIMENSION = new Dimension(20,20);
 		images = new ArrayList<Icon>();
-		//TODO: preload all cell images to this class
-		BufferedImage img = null;
-//		Icon icon = null;
+		
 		try 
 		{
 			String[] colors = {"empty","blue","green","purple","red","yellow"};
@@ -52,7 +50,6 @@ public class Cell extends JButton{
 			}
 			for(String color : colors)
 			{
-				//img = ImageIO.read(new Image("images/cell-" + color + ls + ".png"));
 				images.add(new ImageIcon("images/cell-" + color + ls + ".png"));
 			}
 
