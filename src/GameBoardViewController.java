@@ -49,6 +49,7 @@ public class GameBoardViewController{
 			if(node == e.getValue())
 				return e.getKey();
 		}
+
 		return null;
 	}
 	//restore default
@@ -109,21 +110,29 @@ public class GameBoardViewController{
 					}
 					
 					//current player transition
-					currentPlayer++;
-					if(currentPlayer > game.getNumberOfPlayers())
-					{
-						currentPlayer = 1;
-					}
-					if(game.getPlayer(currentPlayer).isLoss())
-					{
-						
-					}
+					switchToNextPlayer();
 				}
 				adding = !adding;
 				reportOnStateLabel();
 			}
 			
 		});
+	}
+	
+	private void switchToNextPlayer()
+	{
+		if(game.hasEnded()) return;
+		
+		currentPlayer++;
+		
+		if(currentPlayer == game.getNumberOfPlayers())
+		{
+			currentPlayer = 0;
+		}
+		
+		if(game.getPlayer(currentPlayer).isLoss())
+			switchToNextPlayer();
+	
 	}
 	/**
 	 * Responsible for updating the message on stateLabel
