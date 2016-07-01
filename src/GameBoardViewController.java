@@ -1,5 +1,7 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
@@ -133,6 +135,23 @@ public class GameBoardViewController{
 		if(game.getPlayer(currentPlayer).isLoss())
 			switchToNextPlayer();
 	
+		// I know this is not appropriate but the "MVC" structure of this project is broken anyway...
+		Player player;
+		if((player = game.getPlayers()[currentPlayer]).isAI)
+		{
+			ComputerPlayer cp = (ComputerPlayer)player;
+			//TODO: verify the followings are immutable
+			ArrayList<Node> board = (ArrayList<Node>)Collections
+					.unmodifiableList(game.getGameBoard().getNodes());
+			ArrayList<Node> playerOwnedCells = game.getPlayers()[currentPlayer].getOwnedCells();
+			if(!adding)
+			{
+				HashMap<Node,Node> attacks = cp.attack(board,playerOwnedCells);
+			}else
+			{
+				ArrayList<Node> adds = cp.add(board, playerOwnedCells, this.quota);
+			}
+		}
 	}
 	/**
 	 * Responsible for updating the message on stateLabel

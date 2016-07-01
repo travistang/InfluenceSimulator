@@ -1,10 +1,12 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 public class Player {
 	public final int id;
 	private static int numPlayers;
 	// Because the objects are passed by value, the id of the nodes should be stored in this player instead.
 	private ArrayList<Node> ownedCells;
+	public final boolean isAI = false;
 	
 	public int getNumberOfCellsOwned()
 	{
@@ -15,6 +17,12 @@ public class Player {
 	{
 		ownedCells.add(n);
 	}
+	public ArrayList<Node> getOwnedCells()
+	{
+		// reference http://stackoverflow.com/questions/3700971/immutable-array-in-java
+		return (ArrayList<Node>) Collections.unmodifiableList(ownedCells);
+	}
+	
 	public boolean isAllCellFull()
 	{
 		for(Node c : ownedCells)
