@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
 public interface MCTS<S extends State<Game>>
 {	
@@ -9,11 +10,12 @@ public interface MCTS<S extends State<Game>>
 	 * @param s
 	 * @return
 	 */
-	public default State<Game> select(State<Game> s)
+	@SuppressWarnings("unchecked")
+	public default S select(S s)
 	{
 		try
 		{
-			State<Game> curState = s;
+			S curState = s;
 			
 			while(curState != null)
 				curState = selectionPolicy(curState);
@@ -25,10 +27,10 @@ public interface MCTS<S extends State<Game>>
 			
 			for(State<Game> child : s.getChildren())
 			{
-				if(child.getVisitedTimes() == 0) return child;
+				if(child.getVisitedTimes() == 0) return (S)child;
 			}
 			
-			return select(s.bestChildren());
+			return select((S)s.bestChildren());
 		}
 	}
 	
@@ -41,11 +43,14 @@ public interface MCTS<S extends State<Game>>
 	 * @param s
 	 * @param moves
 	 */
-	public default void expand(State<Game> s,int moves)
+	@SuppressWarnings("unchecked")
+	public default ArrayList<S> expand(S s,int moves)
 	{
-		ArrayList<State<Game>> children = (ArrayList<State<Game>>) s.legalMoves();
+		ArrayList<S> expanded = new ArrayList<S>();
+		// get all possible moves
+		ArrayList<S> children = (ArrayList<S>) s.legalMoves();
 		// filter the legal moves so no moves are duplicated 
-		for(State<Game> child : children)
+		for(S child : children)
 		{
 			if(s.getChildren().contains(child))
 			{
@@ -53,28 +58,37 @@ public interface MCTS<S extends State<Game>>
 			}
 		}
 		// add the required number of moves.
+		// children now contains only unvisited nodes
+		// if there are no such nodes then nothing to do here(i.e. fully expanded)
 		if(children.size() > 1)
 		{
-			ArrayList<State<Game>> newChildren = new ArrayList<State<Game>>();
+			ArrayList<State<Game>> newChildren = new ArrayList<State<Game>>(s.getChildren());
+			// determine moves to add.
+			// moves to add = max(given moves, number of legal moves left)
 			int movesToAdd = (moves > children.size()?children.size():moves);
 			
+			// draw *moves to add* number of nodes
 			for(int i = 0; i < movesToAdd; i++)
 			{
 				int ind = new Random().nextInt(children.size());
-				State<Game> child = children.get(ind);
+				S child = children.get(ind);
 				newChildren.add(child);
+				expanded.add(child);
 				children.remove(ind);
 			}
 		}
+		// update children of the given node
 		s.setChildren((ArrayList<State<Game>>) children);
+		// finally return the newly added states
+		return expanded;
 	};
 	/**
 	 * Step 2: expand the given node by adding all possible moves to the given nodes
 	 * @param s
 	 */
-	public default void expand(State<Game> s)
+	public default ArrayList<S> expand(S s)
 	{
-		expand(s,s.legalMoves().size());
+		return expand(s,s.legalMoves().size());
 	}
 	
 	/**
@@ -85,7 +99,7 @@ public interface MCTS<S extends State<Game>>
 	 */
 	public default float simulate(S s,int times,float rewards,float penalties)
 	{
-		State<Game> curState = s;
+		S curState = s;
 		float totalReward = 0;
 		for(int i = 0; i < times; i++)
 		{
@@ -107,12 +121,13 @@ public interface MCTS<S extends State<Game>>
 	 * Last step: back-propagate the reward
 	 * @param s
 	 */
+	@SuppressWarnings("unchecked")
 	public default void backPropagate(S s)
 	{
-		State<Game> curState = s;
+		S curState = s;
 		while(curState.getParent() != null)
 		{
-			State<Game> parent = curState.getParent();
+			S parent = (S) curState.getParent();
 			int total = 0,size = parent.getChildren().size();
 			for(State<Game> child : parent.getChildren())
 			{
@@ -123,8 +138,45 @@ public interface MCTS<S extends State<Game>>
 		}
 	}
 	
-	public S defaultPolicy(State<Game> s);
-	public default S selectionPolicy(State<Game> s)
+	/**
+	 * Main MCTS Algorithm
+	 *  
+	 * @return the prefered next state
+	 */
+	public default S mcts(S root,float reward,float penalty,int expandNodesPerTime,int iterationTimes,int simulationTimes)
+	{
+		//0. setup
+		root.resetVisitCounts();
+		root.getChildren().clear();
+		
+		for(int i = 0; i < iterationTimes; i++)
+		{
+			//1. recursively select the root according to given selection policy
+			// or just base on uct score if the selection policy is not overridden
+			S node = (S)select(root);
+			//2. expansion
+			ArrayList<S> expanded = expand(node);
+			for(S substates : expanded)
+			{
+				float r = this.simulate(substates,simulationTimes,reward,penalty);
+				substates.setReward(r);
+			}
+			this.backPropagate(node);
+		}
+		//finally, return the most promising moves
+		return (S)root.bestChildren();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public default S defaultPolicy(S s)
+	{
+		if(s.isEndState()) return s;
+		ArrayList<State<Game>> moves = s.legalMoves();
+		int ind = new Random().nextInt(moves.size());
+		return (S)(moves.get(ind));
+	}
+	
+	public default S selectionPolicy(S s)
 	{
 		throw new UnsupportedOperationException();
 	};

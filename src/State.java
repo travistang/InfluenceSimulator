@@ -7,12 +7,12 @@ public abstract class State<Game>
 	private State<Game> parent = null;
 	private float reward;
 	private ArrayList<State<Game>> children = new ArrayList<State<Game>>();
-	private float uctConstant = 1;
+	private static float uctConstant = 1;
 	
 	private static float lowestReward = 0;
 	private static float highestReward = 1;
 	
-	public void setChildren(ArrayList<State<Game>> children)
+	public final void setChildren(ArrayList<State<Game>> children)
 	{
 		//TODO: does this clone the object inside?
 		Collections.copy(this.children, children);
@@ -27,46 +27,46 @@ public abstract class State<Game>
 	{
 		this(null,game);
 	}
-	public ArrayList<State<Game>> getChildren()
+	public final ArrayList<State<Game>> getChildren()
 	{
 		return children;
 	}
-	public State<Game> getParent()
+	public final State<Game> getParent()
 	{
 		return parent;
 	}
-	public void setUctConstant(float c)
+	public final static void setUctConstant(float c)
 	{
 		uctConstant = c;
 	}
 	
-	public void setReward(float r)
+	public final void setReward(float r)
 	{
 		reward = r;
 	}
 	
-	public float getReward()
+	public final float getReward()
 	{
 		return reward;
 	}
 	
-	public static void setRewardBounds(float low, float high)
+	public static final void setRewardBounds(float low, float high)
 	{
 		if(low >= high) return;
 		lowestReward = low;
 		highestReward = high;
 	}
 
-	public static float getLowestReward()
+	public static final float getLowestReward()
 	{
 		return lowestReward;
 	}
-	public static float getHighestReward()
+	public static final float getHighestReward()
 	{
 		return highestReward;
 	}
 	
-	public float getUctConstant()
+	public final float getUctConstant()
 	{
 		return uctConstant;
 	}
@@ -82,7 +82,7 @@ public abstract class State<Game>
 	public abstract boolean isWin();
 	public abstract boolean isLose();
 	
-	public int getVisitedTimes()
+	public final int getVisitedTimes()
 	{
 		return visitedTimes;
 	}
@@ -103,7 +103,7 @@ public abstract class State<Game>
 		}
 		return s;
 	}
-	public void resetVisitCounts()
+	public final void resetVisitCounts()
 	{
 		visitedTimes = 0;
 	}
