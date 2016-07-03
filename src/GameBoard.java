@@ -6,7 +6,11 @@ import java.util.Vector;
 import java.util.Random;
 import java.util.Stack;
 
-public class GameBoard {
+public class GameBoard implements java.io.Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4290900010771530820L;
 	// Node is used here because all the instances of nodes will be contained in GameBoard
 	private final ArrayList<Node> nodes;
 //	private final ArrayList<Integer> largeCells;
@@ -344,6 +348,33 @@ public class GameBoard {
 		//randomize Game board
 		int[][] mat = this.generateRandomAdjacencyMatrix();
 //		connectNodesAccordingToAdjacencyMatrix(mat);
+	}
+	
+	@Override
+	public boolean equals(Object o) 
+	{
+		if(o == this) return true;
+        if (o == null || o.getClass() != this.getClass()) {
+            return false;
+        }
+        GameBoard other = (GameBoard)o;
+        if(other.getNodes().size() != nodes.size()) return false;
+        for(int i = 0; i < nodes.size(); i++)
+        {
+        	if(!nodes.get(i).equals(other.getNodes().get(i))) return false;
+        }
+        return true;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		int prime = 127,sum = 0;
+		for(Node n : nodes)
+		{
+			sum += n.hashCode();
+		}
+		return sum % prime;
 	}
 
 }

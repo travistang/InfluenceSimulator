@@ -1,8 +1,13 @@
+import java.io.Serializable;
 import java.util.Random;
 import java.util.Vector;
 
-public class Node {
+public class Node implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3678123098589215925L;
 	private static final int max_connection = 6;
 	private static int numNodes = 0; 
 	private final int max_number;
@@ -248,5 +253,22 @@ public class Node {
 		connections = new Vector<Node>();
 	};
 	
-	
+	@Override
+	public boolean equals(Object o)
+	{
+		if(o == this) return true;
+        if (o == null || o.getClass() != this.getClass()) {
+            return false;
+        }
+        Node other = (Node)o;
+        return max_number == other.max_number &&
+        		owner == other.owner &&
+        		number == other.number;
+	}
+	@Override
+	public int hashCode()
+	{
+		int prime = 127;
+		return (max_number * 51 + owner * 17 - number * 3) % prime;
+	}
 }

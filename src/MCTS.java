@@ -128,13 +128,23 @@ public interface MCTS<S extends State<Game>>
 		while(curState.getParent() != null)
 		{
 			S parent = (S) curState.getParent();
-			int total = 0,size = parent.getChildren().size();
-			for(State<Game> child : parent.getChildren())
+			try
 			{
-				total += child.getReward();
+				// user-provided back-propagate policy
+				parent.setReward(this.backPropagatePolicy(curState));
+			}catch(UnsupportedOperationException e)
+			{
+				// default back-propagate policy
+				int total = 0,size = parent.getChildren().size();
+				for(State<Game> child : parent.getChildren())
+				{
+					total += child.getReward();
+				}
+				parent.setReward(total/size);
+			}finally
+			{
+				curState = parent;			
 			}
-			parent.setReward(total/size);
-			curState = parent;
 		}
 	}
 	
@@ -143,6 +153,7 @@ public interface MCTS<S extends State<Game>>
 	 *  
 	 * @return the prefered next state
 	 */
+	@SuppressWarnings("unchecked")
 	public default S mcts(S root,float reward,float penalty,int expandNodesPerTime,int iterationTimes,int simulationTimes)
 	{
 		//0. setup
@@ -181,4 +192,8 @@ public interface MCTS<S extends State<Game>>
 		throw new UnsupportedOperationException();
 	};
 	
+	public default float backPropagatePolicy(S s)
+	{
+		throw new UnsupportedOperationException();
+	}
 }

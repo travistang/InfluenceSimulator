@@ -1,12 +1,22 @@
 import java.util.ArrayList;
 import java.util.Collections;
+
+/**
+ * An abstract representation of a state
+ * The parameter of this class should be a type of game
+ * This class adopts a tree-like structure and contains members for MCTS algorithm
+ * @author Travis
+ *
+ * @param <Game>
+ */
+@SuppressWarnings("hiding")
 public abstract class State<Game> 
 {
-	private Game game;
-	private int visitedTimes = 0;
-	private State<Game> parent = null;
-	private float reward;
-	private ArrayList<State<Game>> children = new ArrayList<State<Game>>();
+	protected Game game;
+	protected int visitedTimes = 0;
+	protected State<Game> parent = null;
+	protected float reward;
+	protected ArrayList<State<Game>> children = new ArrayList<State<Game>>();
 	private static float uctConstant = 1;
 	
 	private static float lowestReward = 0;
