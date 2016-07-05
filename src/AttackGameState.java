@@ -55,9 +55,9 @@ public final class AttackGameState extends State<GameBoard> {
 							.stream()
 							.map((nnode) ->
 					{
-						if(nnode.getOwner() != player)
+						// if the adjacent nodes belongs to an enemy and the boundary node has number greater than 1 (i.e. can attack)
+						if(nnode.getOwner() != player && bnode.getNumber() > 1)
 						{
-							// if the neighbor belongs to an enemy
 							return new Pair<Node,Node>(bnode,nnode); 
 						}else
 						{

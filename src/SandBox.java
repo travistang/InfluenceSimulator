@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
@@ -23,12 +24,13 @@ import java.util.stream.Collectors;
 public class SandBox 
 {
 	private GameBoard gameboard;
-	Stack<GameBoard> history;
+	Stack<GameBoard> history = new Stack<GameBoard>();
 	
 	SandBox(GameBoard gameboard)
 	{
 		// Note: Do NOT assign the gameboard directly to an external instance as the simulation afterwards will change it.
 		setGameBoard(gameboard);
+		
 	}
 	public void undo()
 	{
@@ -53,6 +55,7 @@ public class SandBox
 			history.clear();
 		}
 	}
+	//TODO: can this really give a deep copy?
 	public static GameBoard cloneBoard(GameBoard board)
 	{
 		try
@@ -81,6 +84,10 @@ public class SandBox
 			return null;
 		}
 	}
+	public List<GameBoard> getHistory()
+	{
+		return history;
+	}
 	/**
 	 * Set the base of the game be the DEEP COPY of the given objects
 	 * @param game
@@ -92,6 +99,7 @@ public class SandBox
 		if(cb == null)
 			throw new NullPointerException("The given game cannot be cloned"); 
 		this.gameboard = cb;
+		log();
 	}
 	public void log()
 	{
@@ -125,7 +133,6 @@ public class SandBox
 	public boolean add(Node n)
 	{
 		if(n.isFull()) return false;
-		if(n.getOwner() == 0) return false;
 		log();
 		n.add();
 		return true;

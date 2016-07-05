@@ -377,4 +377,8 @@ public class GameBoard implements java.io.Serializable{
 		return sum % prime;
 	}
 
+	public SandBox toSandBox()
+	{
+		return new SandBox(this);
+	}
 }
