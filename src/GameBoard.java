@@ -349,7 +349,13 @@ public class GameBoard implements java.io.Serializable{
 		int[][] mat = this.generateRandomAdjacencyMatrix();
 //		connectNodesAccordingToAdjacencyMatrix(mat);
 	}
-	
+	public GameBoard(ArrayList<Node> nodes)
+	{
+		if(nodes == null) 
+			throw new IllegalArgumentException("the given board is empty");
+		numberOfCells = nodes.size();
+		this.nodes = new ArrayList<Node>(nodes);
+	}
 	@Override
 	public boolean equals(Object o) 
 	{

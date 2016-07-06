@@ -39,46 +39,6 @@ public final class AttackGameState extends State<GameBoard> {
 	{
 		return isEndState() && sandbox.getWinner() != player;
 	}
-
-	/**
-	 * obtain a list of pairs of actions that the player can do in this state
-	 * @return
-	 */
-	//TODO: this needs to be tested
-	public List<Pair<Node,Node>> getPossibleActions()
-	{
-		return sandbox.getBoundaryNodesOfPlayer(player)
-				.stream()
-				.map((bnode) ->
-				{
-					return bnode.getConnections() // examine all neighbors of a boundary node
-							.stream()
-							.map((nnode) ->
-					{
-						// if the adjacent nodes belongs to an enemy and the boundary node has number greater than 1 (i.e. can attack)
-						if(nnode.getOwner() != player && bnode.getNumber() > 1)
-						{
-							return new Pair<Node,Node>(bnode,nnode); 
-						}else
-						{
-							// if the neighbor belongs to the player
-							return new Pair<Node,Node>(null,null); 
-						}
-					}).filter((pair) ->
-					{
-						// get all the pairs that have distinct owners
-						return pair.first != null && pair.second != null; 
-					}).collect(Collectors.toList()); 
-					// return the result as a list for each boundary node 
-					//(so it is a list of list now)
-				})
-				.reduce(new ArrayList<Pair<Node,Node>>(),(list,pol) -> 
-				// reduce the list of list of pairs to a single list  
-				{
-					list.addAll(pol);
-					return list;
-				});
-	}
 	@Override
 	/**
 	 * The legal moves would actually means possible outcomes of EACH attack ( but not all)
@@ -90,20 +50,22 @@ public final class AttackGameState extends State<GameBoard> {
 	 */
 	//TODO: this needs to be tested
 	public ArrayList<State<GameBoard>> legalMoves() {
-		return (ArrayList<State<GameBoard>>)getPossibleActions().stream().map((pair) ->
-		{
-			List<State<GameBoard>> gameBoard = new ArrayList<State<GameBoard>>();
-			for(int i = 0; i < 100; i++)
-			{
-				gameBoard.add(new AttackGameState(tryAttack(pair),player));
-				sandbox.undo();
-			}
-			return gameBoard;
-		}).reduce(new ArrayList<State<GameBoard>>(),(list,gbs) ->
-		{
-			list.addAll(gbs);
-			return list;
-		});
+		return (ArrayList<State<GameBoard>>)sandbox.getPossibleActions(this.player)
+				.stream()
+				.map((pair) ->
+				{
+					List<State<GameBoard>> gameBoard = new ArrayList<State<GameBoard>>();
+					for(int i = 0; i < 100; i++)
+					{
+						gameBoard.add(new AttackGameState(tryAttack(pair),player));
+						sandbox.undo();
+					}
+					return gameBoard;
+				}).reduce(new ArrayList<State<GameBoard>>(),(list,gbs) ->
+				{
+					list.addAll(gbs);
+					return list;
+				});
 	}
 
 	private GameBoard tryAttack(Pair<Node,Node> pair)

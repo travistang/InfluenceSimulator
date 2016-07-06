@@ -144,4 +144,5 @@ public class SandBoxTest {
 			sandbox.getGameBoard().getNodes().get(i).setOwner(i % 2 + 1);
 		assertEquals("has boundary",2,sandbox.getBoundaryNodesOfPlayer(1).size());
 	}
+	
 }
