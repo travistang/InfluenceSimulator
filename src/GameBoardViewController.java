@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
-
+import java.util.stream.*;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 
@@ -141,15 +141,31 @@ public class GameBoardViewController{
 		{
 			ComputerPlayer cp = (ComputerPlayer)player;
 			//TODO: verify the followings are immutable
-			ArrayList<Node> board = (ArrayList<Node>)Collections
-					.unmodifiableList(game.getGameBoard().getNodes());
+//			ArrayList<Node> board = (ArrayList<Node>)Collections
+//					.unmodifiableList(game.getGameBoard().getNodes());
+			ArrayList<Node> board = game.getGameBoard().getNodes();
+			
 			ArrayList<Node> playerOwnedCells = game.getPlayers()[currentPlayer].getOwnedCells();
 			if(!adding)
 			{
-				HashMap<Node,Node> attacks = cp.attack(board,playerOwnedCells);
+				// repeatedly ask the AI to give an attack decision until it has enough
+				
+				Pair<Node,Node> attack = cp.attack(game.getGameBoard().getNodes(), playerOwnedCells);
+				while(attack != null && attack.first != null && attack.second != null)
+				{
+					attack.first.attack(attack.second);
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					update();
+					attack = cp.attack(board, playerOwnedCells);
+				}
 			}else
 			{
-				ArrayList<Node> adds = cp.add(board, playerOwnedCells, this.quota);
+				HashMap<Node,Integer> adds = cp.add(board, playerOwnedCells, this.quota);
+				this.executeAddingOrder(adds);
 			}
 		}
 	}
@@ -414,5 +430,18 @@ public class GameBoardViewController{
 		panel.layCells();
 		
 		currentPlayer = 0;
+	}
+	//TODO: test this
+	private void executeAddingOrder(HashMap<Node,Integer> order)
+	{
+		order.entrySet().stream().forEach((entry) ->
+		{
+			Node node = entry.getKey();
+			int val = entry.getValue();
+			if(node.getNumber() + val > node.getMaxNumber())
+				val = node.getMaxNumber() - node.getNumber();
+			for(int i =0 ; i < val; i++)
+				node.add();
+		});
 	}
 }

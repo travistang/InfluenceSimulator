@@ -13,31 +13,32 @@ public class RandomPolicy extends Policy{
 		this.player = player;
 		random = new Random();
 	}
-
+	//TODO: test this
 	@Override
-	public HashMap<Node, Node> attackingPolicy(ArrayList<Node> board,
+	public Pair<Node, Node> attackingPolicy(ArrayList<Node> board,
 			ArrayList<Node> nodes) {
-		SandBox sb = new SandBox(new GameBoard(board));
+		// This tries to get the references of the nodes inside the board to the sandbox.
+		// So that the methods from the sandbox will return the same references to the map.
+		SandBox sb = new SandBox(new GameBoard(board),false);
+		
 		List<Pair<Node,Node>> pairs = sb.getPossibleActions(player);
-		pairs = sample(pairs,new Random().nextInt(pairs.size()));
-		HashMap<Node,Node> res = new HashMap<Node,Node>();
-		for(Pair<Node,Node> p : pairs)
-		{
-			res.put(p.first, p.second);
-		}
-		return res;
+		pairs = sample(pairs,0);
+		
+		return pairs.get(0);
 	}
 
 	@Override
-	public ArrayList<Node> addingPolicy(ArrayList<Node> board,
+	public HashMap<Node,Integer> addingPolicy(ArrayList<Node> board,
 			ArrayList<Node> nodes, int quota) {
 		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	/**
 	 * return a list of sample of the given list.
 	 * The resultant list holds the reference to the given list
+	 * This methods guarantees that the references of the result are unique.
 	 * @param list
 	 * @param count
 	 * @return

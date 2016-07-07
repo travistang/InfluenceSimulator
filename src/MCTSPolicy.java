@@ -10,14 +10,14 @@ public class MCTSPolicy extends Policy implements MCTS<State<Game>>
 {
 
 	@Override
-	public HashMap<Node, Node> attackingPolicy(ArrayList<Node> board,
+	public Pair<Node, Node> attackingPolicy(ArrayList<Node> board,
 			ArrayList<Node> nodes) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ArrayList<Node> addingPolicy(ArrayList<Node> board,
+	public HashMap<Node,Integer> addingPolicy(ArrayList<Node> board,
 			ArrayList<Node> nodes, int quota) {
 		// TODO Auto-generated method stub
 		return null;

@@ -21,6 +21,24 @@ public abstract class Policy {
 	{
 		
 	}
-	public abstract HashMap<Node,Node> attackingPolicy(ArrayList<Node> board, ArrayList<Node> nodes);
-	public abstract ArrayList<Node> addingPolicy(ArrayList<Node> board, ArrayList<Node> nodes, int quota);
+	/**
+	 * The method for the AI to tell the game which steps it is going to make.
+	 * Since it is a bit difficult to tell which nodes refers to which between two copies of game board,
+	 * the game would assume that the HashMap returned by this function stores the references of the nodes in the real game board.
+	 * A check will be performed to verify this when the game receives the map from this method.
+	 * If the results fails the check an exception will be raised.
+	 * @param board
+	 * @param nodes
+	 * @return
+	 */
+	public abstract Pair<Node,Node> attackingPolicy(ArrayList<Node> board, ArrayList<Node> nodes);
+	/**
+	 * Similar method for the AI to apply it's algorithm to tell the game which nodes it is going to add.
+	 * 
+	 * @param board
+	 * @param nodes
+	 * @param quota
+	 * @return
+	 */
+	public abstract HashMap<Node,Integer> addingPolicy(ArrayList<Node> board, ArrayList<Node> nodes, int quota);
 }

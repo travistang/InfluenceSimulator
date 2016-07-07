@@ -5,8 +5,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,8 +31,15 @@ public class SandBox
 	SandBox(GameBoard gameboard)
 	{
 		// Note: Do NOT assign the gameboard directly to an external instance as the simulation afterwards will change it.
-		setGameBoard(gameboard);
+		this(gameboard,true);
 		
+	}
+	SandBox(GameBoard gameboard,boolean shouldClone)
+	{
+		if(shouldClone)
+			setGameBoard(gameboard);
+		else
+			this.gameboard = gameboard;
 	}
 	public void undo()
 	{
@@ -298,6 +307,14 @@ public class SandBox
 		set.addAll(res);
 		res.clear();
 		res.addAll(set);
+		return res;
+	}
+	public static <T,U> Map<T,U> listOfPairToMap(List<Pair<T,U>> list)
+	{
+		Map<T,U> res = new HashMap<T,U>();
+		list.stream()
+		.filter(p -> p != null)
+		.forEach(pair -> res.put(pair.first, pair.second));
 		return res;
 	}
 }

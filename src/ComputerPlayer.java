@@ -31,7 +31,7 @@ public class ComputerPlayer extends Player
 	 * 
 	 * TODO: needs to be tested
 	 */
-	public HashMap<Node,Node> attack(ArrayList<Node> board, ArrayList<Node> nodes)
+	public Pair<Node,Node> attack(ArrayList<Node> board, ArrayList<Node> nodes)
 	{
 		if(policy == null)
 		{
@@ -46,7 +46,7 @@ public class ComputerPlayer extends Player
 	 * @param quota
 	 * @return
 	 */
-	public ArrayList<Node> add(ArrayList<Node> board, ArrayList<Node> nodes, int quota)
+	public HashMap<Node,Integer> add(ArrayList<Node> board, ArrayList<Node> nodes, int quota)
 	{
 		if(policy == null)
 		{
