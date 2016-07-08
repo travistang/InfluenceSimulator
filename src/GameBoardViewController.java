@@ -149,7 +149,7 @@ public class GameBoardViewController{
 			if(!adding)
 			{
 				// repeatedly ask the AI to give an attack decision until it has enough
-				
+				//TODO: check the validity of the following order given by the AI
 				Pair<Node,Node> attack = cp.attack(game.getGameBoard().getNodes(), playerOwnedCells);
 				while(attack != null && attack.first != null && attack.second != null)
 				{
@@ -164,6 +164,7 @@ public class GameBoardViewController{
 				}
 			}else
 			{
+				//TODO: check the validity of the following order given by the AI
 				HashMap<Node,Integer> adds = cp.add(board, playerOwnedCells, this.quota);
 				this.executeAddingOrder(adds);
 			}

@@ -27,12 +27,15 @@ public class RandomPolicy extends Policy{
 		return pairs.get(0);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public HashMap<Node,Integer> addingPolicy(ArrayList<Node> board,
 			ArrayList<Node> nodes, int quota) {
-		// TODO Auto-generated method stub
-		
-		return null;
+		HashMap<Node,Integer> res = new HashMap<Node,Integer>();
+		fullSample(nodes)
+			.stream()
+			.forEach(n -> res.put(n, new Random().nextInt(n.spaces())));
+		return res;
 	}
 
 	/**
@@ -55,5 +58,14 @@ public class RandomPolicy extends Policy{
 				.sorted((l,r) -> new Random().nextBoolean()? 1 : (-1)) // rearrange the list with a random comparator
 				.collect(Collectors.toList())
 				.subList(0, count); // then take the first "count" items ( which should have the same effect as drawing )
+	}
+	
+	private <T> List<T> sample(List<T> list)
+	{
+		return sample(list,1);
+	}
+	private <T> List<T> fullSample(List<T> list)
+	{
+		return sample(list,list.size());
 	}
 }

@@ -73,6 +73,12 @@ public class Node implements Serializable{
 	{
 		number = max_number;
 	}
+	
+	public int spaces()
+	{
+		return max_number - number;
+	}
+	
 	public void empty()
 	{
 		if(owner == 0)
