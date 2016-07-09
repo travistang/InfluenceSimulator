@@ -20,7 +20,7 @@ public class Player {
 	public ArrayList<Node> getOwnedCells()
 	{
 		// reference http://stackoverflow.com/questions/3700971/immutable-array-in-java
-		return (ArrayList<Node>) Collections.unmodifiableList(ownedCells);
+		return ownedCells;
 	}
 	
 	public boolean isAllCellFull()

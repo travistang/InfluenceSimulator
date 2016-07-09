@@ -17,12 +17,17 @@ public class RandomPolicy extends Policy{
 	@Override
 	public Pair<Node, Node> attackingPolicy(ArrayList<Node> board,
 			ArrayList<Node> nodes) {
+		// give a slight chances that the policy attacks nobody 
+		if(new Random().nextInt(100000) % 100 == 0) return null;
 		// This tries to get the references of the nodes inside the board to the sandbox.
 		// So that the methods from the sandbox will return the same references to the map.
 		SandBox sb = new SandBox(new GameBoard(board),false);
 		
 		List<Pair<Node,Node>> pairs = sb.getPossibleActions(player);
-		pairs = sample(pairs,0);
+		// nothing left to move
+
+		if(pairs.size() == 0) return null;
+		pairs = sample(pairs,1);
 		
 		return pairs.get(0);
 	}
@@ -34,7 +39,7 @@ public class RandomPolicy extends Policy{
 		HashMap<Node,Integer> res = new HashMap<Node,Integer>();
 		fullSample(nodes)
 			.stream()
-			.forEach(n -> res.put(n, new Random().nextInt(n.spaces())));
+			.forEach(n -> res.put(n,1)); // each node add one
 		return res;
 	}
 

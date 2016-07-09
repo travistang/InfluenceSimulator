@@ -3,11 +3,13 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
 import java.util.stream.*;
+
 import javax.swing.JButton;
 import javax.swing.JLabel;
 
@@ -93,81 +95,103 @@ public class GameBoardViewController{
 			@Override
 			public void actionPerformed(ActionEvent e) 
 			{
-				//un-select cell from previous round 
-				selectedCell = null;
-				if(!adding)
-				{
-					quota = game.getPlayer(currentPlayer).getNumberOfCellsOwned();
-					stateLabel.setVisible(true);
-				}else
-				{
-					//handle remaining quota
-					if(quota != 0)
-					{
-						Random random = new Random();
-						while(quota > 0 && ! game.getPlayer(currentPlayer).isAllCellFull())
-						{
-							game.getPlayer(currentPlayer).drawNode(false).add();
-						}
-					}
-					
-					//current player transition
-					switchToNextPlayer();
-				}
-				adding = !adding;
-				reportOnStateLabel();
+				handleProceed();
 			}
 			
 		});
 	}
 	
+	private void handleProceed()
+	{
+		//un-select cell from previous round 
+		selectedCell = null;
+		if(!adding)
+		{
+			quota = game.getPlayer(currentPlayer).getNumberOfCellsOwned();
+			adding = !adding;
+			stateLabel.setVisible(true);
+		}else
+		{
+			//handle remaining quota
+			if(quota != 0)
+			{
+				Random random = new Random();
+				while(quota > 0 && ! game.getPlayer(currentPlayer).isAllCellFull())
+				{
+					addNode(game.getPlayer(currentPlayer).drawNode(false));
+				}
+			}
+			// invert adding flag here so that the correct instruction will be given to the AI
+			adding = !adding;
+			//current player transition
+			switchToNextPlayer();
+		}
+
+		reportOnStateLabel();
+	}
+	private void addNode(Node n)
+	{
+		if(quota == 0) return;
+		if(quota < 0)
+			throw new IllegalArgumentException("Not enough quota");
+		n.add();
+		quota--;
+	}
+	private Player getCurrentPlayer()
+	{
+		return game.getPlayer(currentPlayer);
+	}
+	/**
+	 * range of current player : [1,*numPlayer*]
+	 */
 	private void switchToNextPlayer()
 	{
 		if(game.hasEnded()) return;
 		
 		currentPlayer++;
 		
-		if(currentPlayer == game.getNumberOfPlayers())
+		if(currentPlayer > game.getNumberOfPlayers())
 		{
-			currentPlayer = 0;
+			currentPlayer = 1;
 		}
 		
 		if(game.getPlayer(currentPlayer).isLoss())
 			switchToNextPlayer();
 	
 		// I know this is not appropriate but the "MVC" structure of this project is broken anyway...
-		Player player;
-		if((player = game.getPlayers()[currentPlayer]).isAI)
+		try
 		{
-			ComputerPlayer cp = (ComputerPlayer)player;
-			//TODO: verify the followings are immutable
-//			ArrayList<Node> board = (ArrayList<Node>)Collections
-//					.unmodifiableList(game.getGameBoard().getNodes());
+			ComputerPlayer cp = (ComputerPlayer)getCurrentPlayer();
 			ArrayList<Node> board = game.getGameBoard().getNodes();
 			
-			ArrayList<Node> playerOwnedCells = game.getPlayers()[currentPlayer].getOwnedCells();
-			if(!adding)
-			{
+			ArrayList<Node> playerOwnedCells = getCurrentPlayer().getOwnedCells();
 				// repeatedly ask the AI to give an attack decision until it has enough
 				//TODO: check the validity of the following order given by the AI
-				Pair<Node,Node> attack = cp.attack(game.getGameBoard().getNodes(), playerOwnedCells);
-				while(attack != null && attack.first != null && attack.second != null)
-				{
-					attack.first.attack(attack.second);
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					update();
-					attack = cp.attack(board, playerOwnedCells);
-				}
-			}else
+			Pair<Node,Node> attack = cp.attack(game.getGameBoard().getNodes(), playerOwnedCells);
+			while(attack != null && attack.first != null && attack.second != null)
 			{
-				//TODO: check the validity of the following order given by the AI
-				HashMap<Node,Integer> adds = cp.add(board, playerOwnedCells, this.quota);
-				this.executeAddingOrder(adds);
+				attack.first.attack(attack.second);
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				update();
+				attack = cp.attack(board, playerOwnedCells);
 			}
+			
+			handleProceed();
+			//now the AI applies adding policy
+			//TODO: check the validity of the following order given by the AI
+			HashMap<Node,Integer> adds = cp.add(board, playerOwnedCells, this.quota);
+			this.executeAddingOrder(adds);
+			
+			handleProceed();
+		}catch(Exception e)
+		{
+			//TODO: remove me
+			e.printStackTrace();
+			// is not an AI
 		}
 	}
 	/**
@@ -442,7 +466,7 @@ public class GameBoardViewController{
 			if(node.getNumber() + val > node.getMaxNumber())
 				val = node.getMaxNumber() - node.getNumber();
 			for(int i =0 ; i < val; i++)
-				node.add();
+				addNode(node);
 		});
 	}
 }

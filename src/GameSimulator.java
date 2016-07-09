@@ -63,6 +63,13 @@ public class GameSimulator {
 	 */
 	public GameSimulator() {
 		game = new Game(5,70,GAMEPANEL_WIDTH/(int)Cell.CELL_DIMENSION.getWidth());
+		//set AI player
+		for(int i = 2; i < 5; i++)
+		{
+			ComputerPlayer player = new ComputerPlayer();
+			player.setPolicy(new RandomPolicy(i));
+			game.setPlayer(i, player);
+		}
 		gamePanel = new GamePanel(game.getGameBoard().getNumberOfNodes());
 		controller = new GameBoardViewController(game,gamePanel);
 		//TODO: set label here

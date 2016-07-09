@@ -5,7 +5,7 @@ public class Game {
 	private boolean started;
 	private GameBoard gameboard;
 	private GameBoardViewController controller;
-	private Player[] players;
+	private ArrayList<Player> players;
 	private int[] playerStartPositions;
 	
 	public GameBoard getGameBoard()
@@ -14,17 +14,21 @@ public class Game {
 	}
 	public int[] getNumberOfCellsOwnedStatistics()
 	{
-		int[] res = new int[players.length];
+		int[] res = new int[players.size()];
 		for(int i = 0; i < 5; i++)
 		{
-			res[i] = players[i].getNumberOfCellsOwned();
+			res[i] = players.get(i).getNumberOfCellsOwned();
 		}
 		return res;
 	}
 	
-	public Player[] getPlayers()
+	public ArrayList<Player> getPlayers()
 	{
 		return players;
+	}
+	public void setPlayer(int i,Player player)
+	{
+		players.set(i,player);
 	}
 	public boolean hasEnded()
 	{
@@ -53,11 +57,11 @@ public class Game {
 	 */
 	public Player getPlayer(int index)
 	{
-		if(index > players.length || index <= 0)
+		if(index > players.size()|| index <= 0)
 		{
 			return null;
 		}
-		return players[index - 1];
+		return players.get(index - 1);
 	}
 	public boolean hasStarted()
 	{
@@ -83,7 +87,7 @@ public class Game {
 	}
 	public int getNumberOfPlayers()
 	{
-		return players.length;
+		return players.size();
 	}
 	
 	public void setGameBoard(GameBoard gb)
@@ -107,7 +111,7 @@ public class Game {
 	{
 		Random random = new Random();
 		ArrayList<Integer> drawn = new ArrayList<Integer>();
-		for(int i = 0; i < players.length; i++)
+		for(int i = 0; i < players.size(); i++)
 		{
 			int pos = random.nextInt(gameboard.getNumberOfNodes());
 			if(!drawn.contains(pos))
@@ -122,11 +126,11 @@ public class Game {
 		started = false;
 		gameboard = new GameBoard(numcells);
 		controller = null;
-		players = new Player[numplayers];
+		players = new ArrayList<Player>();
 		playerStartPositions = new int[numplayers];
 		for(int i = 0; i < numplayers; i++)
 		{
-			players[i] = new Player();
+			players.add(new Player());
 		}
 		initializePlayerStartingPosition();
 	}
