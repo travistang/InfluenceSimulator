@@ -401,7 +401,7 @@ public class GameBoard implements java.io.Serializable{
 	 */
 	private void initializeGraph()
 	{
-		this.graph = new SparseGraph<Node,Integer>();
+		this.graph = new UndirectedSparseGraph<Node,Integer>();
 
 		int i = 0;
 		for(Node node : nodes)
@@ -409,6 +409,7 @@ public class GameBoard implements java.io.Serializable{
 			graph.addVertex(node);
 			for(Node to : node.getConnections())
 			{
+				if(!nodes.contains(to)) throw new RuntimeException("Corrupted node list");
 				graph.addEdge(i++,node,to);
 			}
 		}

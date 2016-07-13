@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Paint;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -23,11 +24,13 @@ import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.util.Context;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
+import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.renderers.VertexLabelRenderer;
 
 
@@ -76,7 +79,7 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 				@Override
 				public Stroke transform(Node arg0)
 				{
-					if(arg0.getMaxNumber() == 8)
+					if(arg0.getMaxNumber() == 12)
 						return new BasicStroke(3);
 					return new BasicStroke(1);
 				}
@@ -93,6 +96,7 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 				}
 				
 			};
+
 	public GameBoardViewController getController()
 	{
 		return controller;
@@ -103,6 +107,18 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 		this.controller = controller;
 	}
 	
+	private static Layout<Node,Integer> initializeLayout(Graph<Node,Integer> graph)
+	{
+		Layout<Node,Integer> layout = new KKLayout<Node,Integer>(graph);
+		// ...and any other initialization here
+		return layout;
+	}
+
+	private void lockLayout()
+	{
+		final Layout<Node,Integer> layout = this.getGraphLayout();
+		layout.getGraph().getVertices().stream().forEach((node) -> layout.lock(node, true));
+	}
 //	public GameView(Graph<Node,Integer> graph,Dimension preferredSize)
 //	{
 //		super(new ISOMLayout<Node,Integer>(graph),preferredSize);
@@ -112,20 +128,23 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 
 	public GameView(Graph<Node,Integer> graph)
 	{
-		super(new SpringLayout<Node,Integer>(graph));
-		
+		super(new KKLayout<Node,Integer>(graph));
 		this.getRenderContext().setVertexFillPaintTransformer(paintTransformer);
 		this.getRenderContext().setVertexLabelTransformer(labelTransformer);
 		this.getRenderContext().setVertexStrokeTransformer(strokeTransformer);
 		this.getRenderContext().setVertexDrawPaintTransformer(drawPaintTransformer);
-		
+		this.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<>());
 		mouse.setMode(Mode.TRANSFORMING);
 		this.setGraphMouse(mouse);
 		this.addGraphMouseListener(new GraphMouseListener<Node>()
 		{
 			@Override
 			public void graphClicked(Node arg0, MouseEvent arg1) {
+				lockLayout();
 				controller.selectNode(arg0);
+				revalidate();
+				repaint();
+				
 			}
 
 			@Override
@@ -139,7 +158,7 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 			}
 		
 		});
-		
+
 	}
 
 }
