@@ -9,6 +9,11 @@ public class Coordinate {
 	{
 		this.x = this.y = -1;
 	}
+	public Coordinate(Pair<Integer,Integer> p)
+	{
+		this.x = p.first;
+		this.y = p.second;
+	}
 	public boolean isInvalid()
 	{
 		return x != -1 && y != -1;

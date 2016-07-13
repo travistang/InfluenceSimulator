@@ -1,10 +1,20 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.Random;
 import java.util.Stack;
+import java.util.stream.Collectors;
+
+import javax.print.attribute.Size2DSyntax;
+
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.SparseGraph;
+import edu.uci.ics.jung.graph.UndirectedSparseGraph;
+import edu.uci.ics.jung.graph.util.Graphs;
 
 public class GameBoard implements java.io.Serializable{
 	/**
@@ -13,6 +23,7 @@ public class GameBoard implements java.io.Serializable{
 	private static final long serialVersionUID = 4290900010771530820L;
 	// Node is used here because all the instances of nodes will be contained in GameBoard
 	private final ArrayList<Node> nodes;
+	private Graph<Node,Integer> graph;
 //	private final ArrayList<Integer> largeCells;
 	private final int numberOfCells;
 	public static final float LARGE_CELL_RATIO = 0.25f;
@@ -346,9 +357,38 @@ public class GameBoard implements java.io.Serializable{
 			nodes.add(new Node());
 		}
 		//randomize Game board
-		int[][] mat = this.generateRandomAdjacencyMatrix();
-//		connectNodesAccordingToAdjacencyMatrix(mat);
+		randomizeGameBoard();
+		initializeGraph();
+
+	}	
+	public void randomizeGameBoard()
+	{
+		if(nodes.size() <= 1) return;
+		
+		//first get a random spanning tree
+		Random random = new Random(); 
+		// ran: [0,2V + 1]; totalDeg: [V - 1,3V](minimum edges of connection)
+		int totalDeg = random.nextInt(nodes.size() * 2 + 1) + nodes.size() - 1;
+		for(int i = 0; i < nodes.size() - 1;i++)
+		{
+			nodes.get(i).connectTo(nodes.get(i + 1));
+		}
+		//add edges until the total number of edges equals to totalDeg, which should be in range [V - 1,3V]
+		for(int i = nodes.size() - 1; i < totalDeg; i ++)
+		{
+			ArrayList<Node> nonFullNodes = (ArrayList<Node>) nodes.stream()
+					.filter((node) -> node.getConnections().size() < 6)
+					.collect(Collectors.toList());
+			Node from = nonFullNodes.get(random.nextInt(nonFullNodes.size()));
+			Node to;
+			do
+			{
+				to = nonFullNodes.get(random.nextInt(nonFullNodes.size()));
+			}while(to.equals(from) || to.isConnectedTo(from));
+			from.connectTo(to);
+		}
 	}
+	
 	public GameBoard(ArrayList<Node> nodes)
 	{
 		if(nodes == null) 
@@ -356,6 +396,29 @@ public class GameBoard implements java.io.Serializable{
 		numberOfCells = nodes.size();
 		this.nodes = new ArrayList<Node>(nodes);
 	}
+	/**
+	 * initialize graph after the nodes are connected
+	 */
+	private void initializeGraph()
+	{
+		this.graph = new SparseGraph<Node,Integer>();
+
+		int i = 0;
+		for(Node node : nodes)
+		{
+			graph.addVertex(node);
+			for(Node to : node.getConnections())
+			{
+				graph.addEdge(i++,node,to);
+			}
+		}
+	}
+	
+	public Graph<Node,Integer> getGraph()
+	{
+		return graph;
+	}
+	
 	@Override
 	public boolean equals(Object o) 
 	{

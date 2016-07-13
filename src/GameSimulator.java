@@ -34,7 +34,8 @@ public class GameSimulator {
 
 	private JFrame frame;
 	private Game game;
-	private GamePanel gamePanel;
+//	private GamePanel gamePanel;
+	private GameView view;
 	private GameBoard gameboard;
 	private GameBoardViewController controller;
 	private JLabel stateLabel;
@@ -70,9 +71,15 @@ public class GameSimulator {
 			player.setPolicy(new RandomPolicy(i));
 			game.setPlayer(i, player);
 		}
-		gamePanel = new GamePanel(game.getGameBoard().getNumberOfNodes());
-		controller = new GameBoardViewController(game,gamePanel);
-		//TODO: set label here
+
+		/**
+		 * Initialize the game panel with the nodes in the Game.
+		 * Now all the cells should be associated with exactly one node
+		 */
+//		gamePanel = new GamePanel(game.getGameBoard().getNodes());
+		view = new GameView(game.getGameBoard().getGraph());
+		controller = new GameBoardViewController(game,view);
+
 		initialize();
 		//associate stateLabel and proceedBtn after initialization
 		controller.setStateLabel(stateLabel);
@@ -198,11 +205,20 @@ public class GameSimulator {
 		);
 		controlPanel.setLayout(gl_controlPanel);
 
-		gamePanel.setBackground(Color.WHITE);
-		gamePanel.setBorder(new LineBorder(new Color(0, 0, 0)));
-		gamePanel.setBounds(118, 0, 502, 426);
-		gamePanel.setPreferredSize(new Dimension(502,426));
-		gamePanel.setSize(502,426);
-		frame.getContentPane().add(gamePanel);
+//		gamePanel.setBackground(Color.WHITE);
+//		gamePanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+//		gamePanel.setBounds(118, 0, 502, 426);
+//		gamePanel.setPreferredSize(new Dimension(502,426));
+//		gamePanel.setSize(502,426);
+//		frame.getContentPane().add(gamePanel);
+		/*
+		 * GameView configurations
+		 */
+		view.setBackground(Color.WHITE);
+		view.setBorder(new LineBorder(new Color(0, 0, 0)));
+		view.setBounds(118, 0, 502, 426);
+		view.setPreferredSize(new Dimension(502,426));
+		view.setSize(502,426);
+		frame.getContentPane().add(view);
 	}
 }

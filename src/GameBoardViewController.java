@@ -18,10 +18,11 @@ public class GameBoardViewController{
 //	private GameBoard gameboard;
 	private Game game;
 	private GamePanel panel;
-	private Cell selectedCell;
-	private HashMap<Cell,Node> cellNodeMap;
+//	private Cell selectedCell;
+	private Node selectedNode;
+//	private HashMap<Cell,Node> cellNodeMap;
 	// currentPlayer means the player playing the round
-	private int currentPlayer;
+	private Player currentPlayer;
 	// adding mode
 	private boolean adding;
 	private int quota;
@@ -39,7 +40,7 @@ public class GameBoardViewController{
 
 	public Node getNode(Cell cell)
 	{
-		return cellNodeMap.get(cell);
+		return cell.getNode();
 	}
 	public void setGame(Game game)
 	{
@@ -48,10 +49,9 @@ public class GameBoardViewController{
 	
 	public Cell getCell(Node node)
 	{
-		for(Map.Entry<Cell,Node> e : cellNodeMap.entrySet())
+		for(Cell c :panel.getCells())
 		{
-			if(node == e.getValue())
-				return e.getKey();
+			if(c.getNode().equals(node)) return c;
 		}
 
 		return null;
@@ -59,7 +59,7 @@ public class GameBoardViewController{
 	//restore default
 	public void reset()
 	{
-		currentPlayer = 1;
+		currentPlayer = game.getPlayer(1);
 		panel.unhighlight();
 		game.getGameBoard().reset();
 		
@@ -73,7 +73,7 @@ public class GameBoardViewController{
 		{
 			System.out.println("Error with number of players in game");
 		}
-		currentPlayer = 1;
+		currentPlayer = game.getPlayer(1);
 		this.initializePlayerStartingPosition();
 		//handling start logic
 		if(proceedBtn == null)
@@ -104,10 +104,11 @@ public class GameBoardViewController{
 	private void handleProceed()
 	{
 		//un-select cell from previous round 
-		selectedCell = null;
+//		selectedCell = null;
+		selectedNode = null;
 		if(!adding)
 		{
-			quota = game.getPlayer(currentPlayer).getNumberOfCellsOwned();
+			quota = currentPlayer.getNumberOfCellsOwned();
 			adding = !adding;
 			stateLabel.setVisible(true);
 		}else
@@ -115,10 +116,9 @@ public class GameBoardViewController{
 			//handle remaining quota
 			if(quota != 0)
 			{
-				Random random = new Random();
-				while(quota > 0 && ! game.getPlayer(currentPlayer).isAllCellFull())
+				while(quota > 0 && ! currentPlayer.isAllCellFull())
 				{
-					addNode(game.getPlayer(currentPlayer).drawNode(false));
+					addNode(currentPlayer.drawNode(false));
 				}
 			}
 			// invert adding flag here so that the correct instruction will be given to the AI
@@ -139,8 +139,9 @@ public class GameBoardViewController{
 	}
 	private Player getCurrentPlayer()
 	{
-		return game.getPlayer(currentPlayer);
+		return currentPlayer;
 	}
+
 	/**
 	 * range of current player : [1,*numPlayer*]
 	 */
@@ -148,20 +149,15 @@ public class GameBoardViewController{
 	{
 		if(game.hasEnded()) return;
 		
-		currentPlayer++;
-		
-		if(currentPlayer > game.getNumberOfPlayers())
+		do
 		{
-			currentPlayer = 1;
-		}
+			currentPlayer = game.getNextPlayer(currentPlayer);
+		}while(currentPlayer.isLoss());
 		
-		if(game.getPlayer(currentPlayer).isLoss())
-			switchToNextPlayer();
-	
 		// I know this is not appropriate but the "MVC" structure of this project is broken anyway...
 		try
 		{
-			ComputerPlayer cp = (ComputerPlayer)getCurrentPlayer();
+			ComputerPlayer cp = (ComputerPlayer) getCurrentPlayer();
 			ArrayList<Node> board = game.getGameBoard().getNodes();
 			
 			ArrayList<Node> playerOwnedCells = getCurrentPlayer().getOwnedCells();
@@ -170,12 +166,13 @@ public class GameBoardViewController{
 			Pair<Node,Node> attack = cp.attack(game.getGameBoard().getNodes(), playerOwnedCells);
 			while(attack != null && attack.first != null && attack.second != null)
 			{
-				attack.first.attack(attack.second);
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				this.selectNode(attack.first);
+				this.selectNode(attack.second);
+//				try {
+//					Thread.sleep(500);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
 				update();
 				attack = cp.attack(board, playerOwnedCells);
 			}
@@ -203,21 +200,21 @@ public class GameBoardViewController{
 		if(!stateLabel.isVisible())
 			stateLabel.setVisible(true);
 		String msg = null;
-
+		int ind = game.getIndexOfPlayer(currentPlayer);
 		if(adding)
 		{
 			if(quota > 0)
-				msg = "Player " + currentPlayer + " adding. " + quota + " move(s) left";
+				msg = "Player " + ind + " adding. " + quota + " move(s) left";
 			else
-				msg = "Player " + currentPlayer + "has no quotas left.";
+				msg = "Player " + ind + "has no quotas left.";
 		}else
 		{
-			msg = "Player " + currentPlayer + "'s move";
+			msg = "Player " + ind + "'s move";
 		}
 		
 		if(game.hasEnded())
 		{
-			msg = "Player " + game.getWinner() + " wins";
+			msg = "Player " + game.getIndexOfPlayer(game.getWinner()) + " wins";
 		}
 		msg = "<html>" + msg + "</html>";
 		stateLabel.setText(msg);
@@ -244,32 +241,27 @@ public class GameBoardViewController{
 		}
 		update();
 	}
-	private void setCellAppearence(Cell c,int owner, int number)
-	{
-		if(c != null)
-		{
-			c.setAppearance(owner, number);
-		}
-	}
+//	private void setCellAppearence(Cell c,int owner, int number)
+//	{
+//		if(c != null)
+//		{
+//			c.setAppearance(owner, number);
+//		}
+//	}
 	/**
 	 * Update game panels
 	 */
 	public void update()
 	{
+		//TODO: is an update required for using JUNG library?
 		//clear player owned cells
 		for(int i = 0; i < game.getNumberOfPlayers(); i++)
 		{
 			game.getPlayer(i + 1).removeAllCells();
 		}
-		for(int i = 0; i < game.getGameBoard().getNodes().size();i++)
+		for(Cell c : panel.getCells())
 		{
-			Node n = game.getGameBoard().getNodes().get(i);
-			Cell c = this.getCell(n);
-			c.setAppearance(n.getOwner(), n.getNumber());
-			
-			//update player statistics
-			if(n.getOwner() > 0)
-				game.getPlayer(n.getOwner()).addCells(n);
+			c.updateAppearence();
 		}
 	}
 	/**
@@ -314,15 +306,144 @@ public class GameBoardViewController{
 	 * 6. If there are no quotas left, the function will do nothing and return immediately ( which is not supposed to happen)
 	 * @param cell that is newly selected
 	 */
-	public void selectCell(Cell cell)
+//	public void selectCell(Cell cell)
+//	{
+//		Node node = getNode(cell);
+//		
+//		if(node == null) throw new IllegalArgumentException("No such node in cell");
+//		
+//		//do not allow the selection to proceed if the game isn't even started.
+//		if(!game.hasStarted())return;
+//
+//		// add mode
+//		if(adding)
+//		{
+//			//reset selected cell to prepare for the next round
+//			selectedCell = null;
+//			
+//			panel.unhighlight();
+//			
+//			//6.
+//			if(quota == 0)
+//			{
+//				System.out.println("No quotas left");
+//				return;
+//			}
+//			//5.
+//			if(node.getNumber() == node.getMaxNumber())
+//			{
+//				return;
+//			}
+//			//4.
+//			if(currentPlayer.getOwnedCells().contains(node))
+//			{
+//				node.setNumber(node.getNumber() + 1);
+//				quota--;
+//			}
+//			//show quota(s) left
+//			reportOnStateLabel();
+//			update();
+//			return;
+//		}
+//		
+//		//no cell is selected previously
+//		if(selectedCell == null)
+//		{
+//			if(currentPlayer.getOwnedCells().contains(node))
+//			{
+//				panel.highlight(cell);
+//				selectedCell = cell;
+//			}
+//		}else
+//		{
+//			Node target = getNode(selectedCell);
+//
+//			if(node.getOwner() != target.getOwner())
+//			{
+//				// the connectivity would be checked when attack
+//				// so no need to check again
+//				boolean result = target.attack(node);
+//				if(result)
+//				{
+//					panel.highlight(getCell(node));
+//					selectedCell = getCell(node);
+//				}else
+//				{
+//					panel.unhighlight();
+//					selectedCell = null;
+//				}
+//			}else
+//			{
+//				selectedCell = cell;
+//				panel.highlight(cell);
+//			}
+//		}
+//		update();
+//		//check winning condition
+//		if(game.hasEnded())
+//		{
+//			this.reportOnStateLabel();
+//		}
+//	}
+	GameBoardViewController(Game game,GameView view)
 	{
-		Node node = getNode(cell);
-		
-		if(node == null)
+		this.game = game;
+		game.setController(this);
+	}
+	GameBoardViewController(Game game, GamePanel dp)
+	{
+		// construct all mappings here
+		this.game = game;
+		game.setController(this);
+		panel = dp;
+
+		if(game.getGameBoard().getNumberOfNodes() != panel.getCells().size())
 		{
-			System.out.println("incomplete cell-node mapping");
+			System.out.println("number of nodes in gameboard does not match number of cells in panel.");
 			return;
 		}
+		//associate panel controller to this only after cellNodeMap construction
+		panel.setController(this);
+		
+		/**
+		 * Construct cellCoordMap for gamePanel
+		 * Each cell is of size 20*20. Each connection is 20 pixels long
+		 */
+		int i = 0;
+		int z = 0;
+		int cellsPerCol = (int)Math.ceil(Math.sqrt(game.getGameBoard().getNumberOfNodes()));
+		int len = (int)Cell.CELL_DIMENSION.getWidth()*2;
+		for(int y = len/2; y < cellsPerCol*len + len/2; y+=len)
+		{
+			if(i == panel.getCells().size())
+			{
+				break;
+			}
+			for(int x = len/2,k = 0; x < cellsPerCol*len + len/2;x += len,k++)
+			{
+				if(i == panel.getCells().size())
+				{
+					break;
+				}
+				//upper
+				if(k%2 == 0)
+				{
+					panel.getCells().get(i++).setPosition(new Pair<Integer,Integer>(x,y));
+				}else //lower
+				{
+					panel.getCells().get(i++).setPosition(new Pair<Integer,Integer>(x,y));
+				}
+			}
+
+		}
+		panel.layCells();
+		
+		currentPlayer = game.getFirstPlayer();
+		if(currentPlayer == null) throw new NullPointerException("there are no players in game");
+	}
+	public void selectNode(Node node)
+	{
+		if(node == null) throw new IllegalArgumentException("No such node in cell");
 		
 		//do not allow the selection to proceed if the game isn't even started.
 		if(!game.hasStarted())return;
@@ -331,9 +452,7 @@ public class GameBoardViewController{
 		if(adding)
 		{
 			//reset selected cell to prepare for the next round
-			selectedCell = null;
-			
-			panel.unhighlight();
+			selectedNode = null;
 			
 			//6.
 			if(quota == 0)
@@ -347,7 +466,7 @@ public class GameBoardViewController{
 				return;
 			}
 			//4.
-			if(node.getOwner() == currentPlayer)
+			if(currentPlayer.getOwnedCells().contains(node))
 			{
 				node.setNumber(node.getNumber() + 1);
 				quota--;
@@ -359,102 +478,56 @@ public class GameBoardViewController{
 		}
 		
 		//no cell is selected previously
-		if(selectedCell == null)
+		if(selectedNode == null)
 		{
-			if(currentPlayer == node.getOwner())
+			// and the current player owns the node
+			// then the given node is now a selected node
+			if(currentPlayer.getOwnedCells().contains(node))
 			{
-				panel.highlight(cell);
-				selectedCell = cell;
+				selectedNode = node;
 			}
 		}else
 		{
-			Node target = getNode(selectedCell);
+			// a node is selected already
+			// in this case an attack action will be performed
 
-			if(node.getOwner() != target.getOwner())
+			// if the currently selected node has a different owner than the previous one
+			// then an  attack action will be performed
+			if(selectedNode.getOwner() != node.getOwner())
 			{
 				// the connectivity would be checked when attack
 				// so no need to check again
-				boolean result = target.attack(node);
+				boolean result = selectedNode.attack(node);
 				if(result)
 				{
-					panel.highlight(getCell(node));
-					selectedCell = getCell(node);
+					// a successful attack
+					// highlight the target node
+					selectedNode = node;
 				}else
 				{
-					panel.unhighlight();
-					selectedCell = null;
+					// a failed attack
+					// then no nodes are selected
+					selectedNode = null;
 				}
 			}else
 			{
-				selectedCell = cell;
-				panel.highlight(cell);
+				// the player is trying to attack the same node (or he just wants to select another node of his)
+				// then update the selected node
+				selectedNode = node;
 			}
 		}
+		// finally update the view
 		update();
 		//check winning condition
 		if(game.hasEnded())
 		{
 			this.reportOnStateLabel();
 		}
+
 	}
-	GameBoardViewController(Game game, GamePanel dp)
+	public Node getSelectedNode()
 	{
-		// construct all mappings here
-		this.game = game;
-		game.setController(this);
-		panel = dp;
-
-		cellNodeMap = new HashMap<Cell,Node>();
-		HashMap<Cell,Coordinate> cellCoordMap = new HashMap<Cell,Coordinate>();
-		if(game.getGameBoard().getNumberOfNodes() != panel.getCells().length)
-		{
-			System.out.println("number of nodes in gameboard does not match number of cells in panel.");
-			return;
-		}
-		// construct cellNodeMap
-		int i = 0;
-		for(Node n : game.getGameBoard().getNodes())
-		{
-			cellNodeMap.put(panel.getCells()[i++],n);
-		}
-		//associate panel controller to this only after cellNodeMap construction
-		panel.setController(this);
-		
-		/**
-		 * Construct cellCoordMap for gamePanel
-		 * Each cell is of size 20*20. Each connection is 20 pixels long
-		 */
-		i = 0;
-		int z = 0;
-		int cellsPerCol = (int)Math.ceil(Math.sqrt(game.getGameBoard().getNumberOfNodes()));
-		int len = (int)Cell.CELL_DIMENSION.getWidth()*2;
-		for(int y = len/2; y < cellsPerCol*len + len/2; y+=len)
-		{
-			if(i == panel.getCells().length)
-			{
-				break;
-			}
-			for(int x = len/2,k = 0; x < cellsPerCol*len + len/2;x += len,k++)
-			{
-				if(i == panel.getCells().length)
-				{
-					break;
-				}
-				//upper
-				if(k%2 == 0)
-				{
-					 cellCoordMap.put(panel.getCells()[i++],new Coordinate(x,y));
-				}else //lower
-				{
-					cellCoordMap.put(panel.getCells()[i++],new Coordinate(x,y + 20));
-				}
-			}
-
-		}
-		panel.setCellCoordinateMap(cellCoordMap);
-		panel.layCells();
-		
-		currentPlayer = 0;
+		return selectedNode;
 	}
 	//TODO: test this
 	private void executeAddingOrder(HashMap<Node,Integer> order)

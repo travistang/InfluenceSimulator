@@ -258,7 +258,7 @@ public class Node implements Serializable{
 		// connection issue
 		connections = new Vector<Node>();
 	};
-	
+
 	@Override
 	public boolean equals(Object o)
 	{
@@ -267,14 +267,15 @@ public class Node implements Serializable{
             return false;
         }
         Node other = (Node)o;
-        return max_number == other.max_number &&
-        		owner == other.owner &&
-        		number == other.number;
+//        return max_number == other.max_number &&
+//        		owner == other.owner &&
+//        		number == other.number;
+        return id == other.id;
 	}
 	@Override
 	public int hashCode()
 	{
 		int prime = 127;
-		return (max_number * 51 + owner * 17 - number * 3) % prime;
+		return (max_number * 51 + owner * 17 - number * 3 * id) % prime;
 	}
 }

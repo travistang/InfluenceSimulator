@@ -1,19 +1,10 @@
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -26,6 +17,8 @@ public class Cell extends JButton{
 	private int number;
 	private static ArrayList<Icon> images;
 	private static GameBoardViewController controller;
+	private Pair<Integer,Integer> position;
+	private Node node;
 	public static final Dimension CELL_DIMENSION;
 	private boolean isLarge;
 	private final URL path = this.getClass().getResource("images/cell");
@@ -61,10 +54,10 @@ public class Cell extends JButton{
 	}
 	
 	
-	public void setAppearance(int owner, int number)
+	public void updateAppearence()
 	{
-		this.owner = owner;
-		this.number = number;
+		this.owner = node.getOwner();
+		this.number = node.getNumber();
 		
 		int index = 0;
 		if(!isLarge)
@@ -81,6 +74,22 @@ public class Cell extends JButton{
 		this.setText(Integer.toString(number));
 	}
 
+	public Node getNode()
+	{
+		return node;
+	}
+	public Pair<Integer,Integer> getPosition()
+	{
+		return position;
+	}
+	/*
+	 * 
+	 * To make it compatible with the previous work.
+	 */
+	public Coordinate getCoordinate()
+	{
+		return new Coordinate(position);
+	}
 	public static void setController(GameBoardViewController controller)
 	{
 		Cell.controller = controller;
@@ -94,16 +103,32 @@ public class Cell extends JButton{
 	}
 	public void reload()
 	{
-		this.setAppearance(this.owner, this.number);
+		this.updateAppearence();
 	}
 	
+	public void setPosition(Pair<Integer,Integer> pos)
+	{
+		this.position = pos;
+	}
 	Cell()
 	{
 		owner = number = 0;
 		isLarge = false;
 		controller = null;
 		this.setFont(new Font("Arial", Font.PLAIN,8));
-		this.setAppearance(0,0);
+		this.updateAppearence();
 		this.setPreferredSize(CELL_DIMENSION);
+		position = null;
+	}
+	Cell(Node n)
+	{
+		this.node = n;
+		owner = n.getOwner();
+		number = n.getNumber();
+		controller = null;
+		this.setFont(new Font("Arial", Font.PLAIN,8));
+		this.updateAppearence();
+		this.setPreferredSize(CELL_DIMENSION);
+		position = null;
 	}
 }

@@ -89,7 +89,23 @@ public class Game {
 	{
 		return players.size();
 	}
-	
+	public int getIndexOfPlayer(Player p)
+	{
+		return players.indexOf(p) + 1;
+	}
+	public Player getFirstPlayer()
+	{
+		if(players.isEmpty()) return null;
+		return players.get(0);
+	}
+	public Player getNextPlayer(Player cur)
+	{
+		int i = players.indexOf(cur);
+		if(i == -1) throw new IllegalArgumentException("Player is not in game");
+		if(players.size() == 1) return cur;
+		if(i == players.size() - 1) return players.get(0);
+		return players.get(i + 1);
+	}
 	public void setGameBoard(GameBoard gb)
 	{
 		this.gameboard = gb;

@@ -4,11 +4,11 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.geom.Line2D;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+
+import java.util.stream.Collectors;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -21,32 +21,43 @@ import javax.swing.JPanel;
  *************************************************************/
 public class GamePanel extends JPanel{
 
-	private Cell[] cells;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private ArrayList<Cell> cells;
 	private GameBoardViewController controller;
-	private HashMap<Cell,Coordinate> cellCoordinateMap;
 	private Coordinate highlightCoordinate;
 	
 	public void draw(Graphics graphics)
 	{
 		int dl = (int)Cell.CELL_DIMENSION.getWidth()/2;
-		for(int w = 0; w < cells.length;w++)
+		cells.stream().forEach((cell) ->
 		{
-			Cell c = cells[w];
-			for(Node g : controller.getNode(c).getConnections())
-			{
-	
-				Cell cc = controller.getCell(g);
-				Coordinate cood = cellCoordinateMap.get(cc);
-				Coordinate selfcood = cellCoordinateMap.get(c);
-				if(cood == null || selfcood == null)
-				{
-					System.out.println("Problem with the cellCoordinateMap in GamePanel");
-					continue;
-				}
-				
-				graphics.drawLine(cood.x + dl, cood.y + dl, selfcood.x + dl, selfcood.y + dl);
-			}
-		}
+			Pair<Integer,Integer> selfcoord = cell.getPosition();
+			cell.getNode().getConnections().stream().forEach((neighbour) -> {
+				Pair<Integer,Integer> coord = this.getCell(neighbour).getPosition();
+				graphics.drawLine(coord.first + dl, coord.second + dl, selfcoord.first + dl, selfcoord.second + dl);
+			});
+		});
+//		for(int w = 0; w < cells.size();w++)
+//		{
+//			Cell c = cells.get(w);
+//			for(Node g : controller.getNode(c).getConnections())
+//			{
+//	
+//				Cell cc = controller.getCell(g);
+//				Pair<Integer,Integer> cood = cc.getPosition();
+//				Pair<Integer,Integer> selfcood = c.getPosition();
+//				if(cood == null || selfcood == null)
+//				{
+//					System.out.println("Problem with the cellCoordinateMap in GamePanel");
+//					continue;
+//				}
+//				
+//				graphics.drawLine(cood.first + dl, cood.second + dl, selfcood.first + dl, selfcood.second + dl);
+//			}
+//		}
 		/**
 		 * Highlighting
 		 */
@@ -64,31 +75,29 @@ public class GamePanel extends JPanel{
 	{
 		this.setLayout(null);
 		Insets inset = this.getInsets();
-		for(int w = 0; w < cells.length;w++)
+		cells.stream().forEach((cell) ->
 		{
-			Cell c = cells[w];
-			Coordinate co = cellCoordinateMap.get(c);
-			if(co == null)
-			{
-				System.out.println("Problem with the cellCoordinateMap in GamePanel");
-				return;
-			}
-			this.add(c);
-			c.setBounds(co.x + inset.left, co.y + inset.top,Cell.CELL_DIMENSION.width,Cell.CELL_DIMENSION.height);
-			c.setPreferredSize(Cell.CELL_DIMENSION);
-			c.addActionListener(new ActionListener()
+			Coordinate co = cell.getCoordinate();
+			this.add(cell);
+			cell.setBounds(co.x + inset.left, co.y + inset.top,Cell.CELL_DIMENSION.width,Cell.CELL_DIMENSION.height);
+			cell.setPreferredSize(Cell.CELL_DIMENSION);
+			cell.addActionListener(new ActionListener()
 			{
 				@Override
 				public void actionPerformed(ActionEvent e)
 				{
-					controller.selectCell(c);
+					//TODO restore the following line to recover the previous feature
+					//controller.selectCell(cell);
 				}
 			});
-			c.setVisible(true);
+			cell.setVisible(true);
+		});
 
-			
-		}
 		this.revalidate();
+	}
+	public Cell getCell(Node n)
+	{
+		return cells.stream().filter((cell) -> n.equals(cell.getNode())).collect(Collectors.toList()).get(0);
 	}
 	public void highlight(Coordinate c)
 	{
@@ -99,7 +108,7 @@ public class GamePanel extends JPanel{
 	}
 	public void highlight(Cell c)
 	{
-		highlight(cellCoordinateMap.get(c));
+		highlight(new Coordinate(c.getPosition()));
 	}
 	public void unhighlight()
 	{
@@ -107,7 +116,7 @@ public class GamePanel extends JPanel{
 		revalidate();
 		repaint();
 	}
-	public Cell[] getCells()
+	public ArrayList<Cell> getCells()
 	{
 		return cells;
 	}
@@ -115,25 +124,17 @@ public class GamePanel extends JPanel{
 	public void setController(GameBoardViewController controller)
 	{
 		this.controller = controller;
-		for(int i = 0; i < cells.length; i++)
+		for(int i = 0; i < cells.size(); i++)
 		{
-			if(controller.isLargeCell(cells[i]))
+			if(controller.isLargeCell(cells.get(i)))
 			{
-				cells[i].setLarge(true);
+				cells.get(i).setLarge(true);
 			}
 		}
 
 		Cell.setController(controller);
 	}
 	
-	public void setCellCoordinateMap(HashMap<Cell,Coordinate> map)
-	{
-		cellCoordinateMap = map;
-	}
-	public HashMap<Cell,Coordinate> getCellCoordinateMap()
-	{
-		return cellCoordinateMap;
-	}
 	@Override
 	public void paintComponent(Graphics g)
 	{
@@ -141,17 +142,14 @@ public class GamePanel extends JPanel{
 		draw(g);
 
 	}
-	public GamePanel(int cellnum) {
 
-		cells = new Cell[cellnum];
-		highlightCoordinate = null;
-		for(int i = 0 ; i < cells.length; i++)
+	public GamePanel(ArrayList<Node> nodes)
+	{
+		cells = new ArrayList<Cell>();
+		for(Node n: nodes)
 		{
-			cells[i] = new Cell();
+			cells.add(new Cell(n));
 		}
-		cellCoordinateMap = null;
 		controller = null;
 	}
-	
-
 }
