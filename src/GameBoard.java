@@ -360,33 +360,117 @@ public class GameBoard implements java.io.Serializable{
 		randomizeGameBoard();
 		initializeGraph();
 
-	}	
+	}
+	public void fullyConnectGameBoard()
+	{
+		// disconnect all nodes first
+		nodes.stream().forEach((node) -> node.disconnectFromAllNodes());
+		
+		// 1. first generate the number of nodes in a ring
+		ArrayList<Integer> ringLength = new ArrayList<Integer>();
+		if(nodes.size() < 6) ringLength.add(nodes.size() - 1);
+		else ringLength.add(6);
+		int ringsum = ringLength.get(0);
+		while(ringsum < nodes.size())
+		{
+			int nextNum = 6 * (1 + ringLength.size()); 
+			ringsum += nextNum;
+			ringLength.add(nextNum);
+		}
+		// no need to subtract the excess number of nodes in the ringLength.
+		//2. node 0 is the center. and it should connect to all node 1-6
+		for(int i = 1;i <= 6; i++)
+			nodes.get(0).connectTo(nodes.get(i));
+		//3. for the rest of the node, suppose a node has a number n, then it should be connected to node n - 1 and node n + 1.
+		for(int i = 1; i < nodes.size() - 1; i++)
+		{
+			nodes.get(i).connectTo(nodes.get(i - 1));
+			nodes.get(i).connectTo(nodes.get(i + 1));
+		}
+		// 
+		/**
+		 * 4.
+		 *  Now the ring is connected as a path but the rings should connect to each other as well.
+		 *  Something is clear that, for a node with index n...
+		 *  - it belongs to ring floor(n / 6)
+		 *  - the shortest path from n to node 0 (center) will be floor(n / 6)
+		 *  - the rings are actually connected by 6n and 6(n + 1) 
+		 *  - all nodes are tagged from inner ring to outer ring in a counter-clockwise direction,
+		 *  	 with the center node as 0, the node at the right hand side of it as 1
+		 *  - When it comes to the corner ( what defines a corner) of a ring, the node connects to exactly one node in the inner ring;
+		 *  	in other case they connect to 2
+		 *  - in the first ring, every node is a corner; in the second ring, node 7,9,11,13,17 are corner,...
+		 *  	therefore the number of distance between corners in ring k is k - 1
+		 *  - therefore the corners are 3n(n + 1), 3n(n + 1) + n, 3n(n + 1) + 2n... at ring n
+		 *  	( this comes from 0.5(n)(n + 1) * 6, and that at ring n, each side has (n - 1) nodes,
+		 *  		therefore the next corner would be 3n(n + 1) + (n - 1) + 1 = 3n(n + 1) + n
+		 *  - each corner of the ring connects to the corner of the ring inside
+		 *  - The corresponding corner is: 3n(n + 1), 3(n + 1)(n + 2), 3(n + 2)(n + 3)...
+		 *  - for each non-corner nodes on ring n, say 3n(n + 1) + 1, it connects to what the previous corner connected,
+		 *  	plus the next node of that node
+		 */
+		try
+		{
+			for(int n = 1; n < ringLength.size(); n++)
+			{
+				/**
+				 * Corner case:
+				 * 	- exactly one node from the inner node should be connected to this,
+				 * 		which is the corresponding corner
+				 */
+				// there are 6 corners in a ring...
+				for(int i = 1; i <= 6; i++)
+					nodes.get(3 * n * (n + 1) + i * n).connectTo(nodes.get(3 * (n - 1) * n + i * (n - 1)));
+				/**
+				 * Then all corners should have degree 3 ( two adjacent nodes and a corresponding corner)
+				 * and all non-corner nodes should have degree 2 ( two adjacent nodes only)
+				 * So start counting from the nodes at the rightmost of each ring (with tag 1,8,21,...T(n) = 3n(n - 1) + n)
+				 * The first node in the ring( i.e. that has the smallest tag) is 3n(n - 1) + n
+				 * All subsequent nodes have tags 3n(n - 1) + n + offset
+				 */
+				for(int offset = 1; offset < ringLength.get(n - 1);offset++)
+				{
+					if(nodes.get(offset + 3 * n * (n - 1) + n).getDegree() == 2)
+					{
+						nodes.get(3 * n * (n - 1) + n + offset).connectTo(nodes.get(3 * (n - 1) * (n - 2) + n - 1 + offset));
+						nodes.get(3 * n * (n - 1) + n + offset).connectTo(nodes.get(3 * (n - 1) * (n - 2) + n + offset));
+					}
+	
+				}
+			}
+		}catch(IndexOutOfBoundsException e)
+		{
+			return;
+		}
+	}
+
 	public void randomizeGameBoard()
 	{
 		if(nodes.size() <= 1) return;
-		
-		//first get a random spanning tree
-		Random random = new Random(); 
-		// ran: [0,2V + 1]; totalDeg: [V - 1,3V](minimum edges of connection)
-		int totalDeg = random.nextInt(nodes.size() * 2 + 1) + nodes.size() - 1;
-		for(int i = 0; i < nodes.size() - 1;i++)
-		{
-			nodes.get(i).connectTo(nodes.get(i + 1));
-		}
-		//add edges until the total number of edges equals to totalDeg, which should be in range [V - 1,3V]
-		for(int i = nodes.size() - 1; i < totalDeg; i ++)
-		{
-			ArrayList<Node> nonFullNodes = (ArrayList<Node>) nodes.stream()
-					.filter((node) -> node.getConnections().size() < 6)
-					.collect(Collectors.toList());
-			Node from = nonFullNodes.get(random.nextInt(nonFullNodes.size()));
-			Node to;
-			do
-			{
-				to = nonFullNodes.get(random.nextInt(nonFullNodes.size()));
-			}while(to.equals(from) || to.isConnectedTo(from));
-			from.connectTo(to);
-		}
+		fullyConnectGameBoard();
+//		
+//		//first get a random spanning tree
+//		Random random = new Random(); 
+//		// ran: [0,2V + 1]; totalDeg: [V - 1,3V](minimum edges of connection)
+//		int totalDeg = random.nextInt(nodes.size() * 2 + 1) + nodes.size() - 1;
+//		for(int i = 0; i < nodes.size() - 1;i++)
+//		{
+//			nodes.get(i).connectTo(nodes.get(i + 1));
+//		}
+//		//add edges until the total number of edges equals to totalDeg, which should be in range [V - 1,3V]
+//		for(int i = nodes.size() - 1; i < totalDeg; i ++)
+//		{
+//			ArrayList<Node> nonFullNodes = (ArrayList<Node>) nodes.stream()
+//					.filter((node) -> node.getConnections().size() < 6)
+//					.collect(Collectors.toList());
+//			Node from = nonFullNodes.get(random.nextInt(nonFullNodes.size()));
+//			Node to;
+//			do
+//			{
+//				to = nonFullNodes.get(random.nextInt(nonFullNodes.size()));
+//			}while(to.equals(from) || to.isConnectedTo(from));
+//			from.connectTo(to);
+//		}
 	}
 	
 	public GameBoard(ArrayList<Node> nodes)
