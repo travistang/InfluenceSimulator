@@ -52,6 +52,15 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 
 	private GameBoardViewController controller;
 	private DefaultModalGraphMouse<Node,Integer> mouse = new DefaultModalGraphMouse<Node,Integer>();
+	private static Point2D UP = new Point2D.Float(0,-30);
+	private static Point2D DOWN = new Point2D.Float(0,30);
+	private static Point2D LEFT = new Point2D.Float(-30,0);
+	private static Point2D RIGHT = new Point2D.Float(30,0);
+	private static Point2D UP_LEFT = new Point2D.Float(-15,-15);
+	private static Point2D UP_RIGHT = new Point2D.Float(15,-15);
+	private static Point2D DOWN_LEFT = new Point2D.Float(-15, 15);
+	private static Point2D DOWN_RIGHT = new Point2D.Float(15, 15);
+	
 	private static Transformer<Node,Paint> paintTransformer = new Transformer<Node,Paint>()
 			{
 				@Override
@@ -118,42 +127,7 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 	
 	private void initializeLayout(Graph<Node,Integer> graph)
 	{
-		Layout<Node,Integer> layout = new StaticLayout<Node,Integer>(graph);
-		// ...and any other initialization here
-		ArrayList<Point2D> usedCoordinates = new ArrayList<Point2D>();
-		Point2D initPoint = new Point2D.Float(100,100);
-		ArrayList<Node> freeNodes = new ArrayList<Node>(graph.getVertices());
-		// sort the freeNodesList so that the nodes with highest degree will be laid on the graph first.
-		Collections.sort(freeNodes,new Comparator<Node>()
-				{
-					public int compare(Node a, Node b)
-					{
-						return -Integer.compare(a.getDegree(), b.getDegree());
-					}
-				});
-			/**
-			 * Suppose a node is at (x,y)
-			 * Then the neighbors are at( enumerating in clockwise direction, starting from the top):
-			 * 	(x - 30,y)
-			 *  (x - 15,y + 15)
-			 *  (x + 15, y + 15)
-			 *  (x + 30, y)
-			 *  (x + 15, y - 15)
-			 *  (x - 15, y - 15)
-			 *  Algorithm:
-			 *  1. Pick a node n with highest degree (not necessarily unique)
-			 *  2. Pick an initial position p
-			 *  3. put n on p
-			 *  4. mark n as visited
-			 *  5. for each adjacent node nn of n that is also a free node:
-			 *  	5.1 find a free adjacent points with respect to the position of n
-			 *  	5.2 put nn to the position
-			 *  	5.3 mark nn as visited
-			 *  6. repeat step 5 with nn as n
-			 */
-			Node node = freeNodes.get(0);
-			//TODO: remove this comment
-//			layCellAndNeighbours(graph,node,initPoint,freeNodes,usedCoordinates,layout);
+			Layout<Node,Integer> layout = new StaticLayout<Node,Integer>(graph);
 			ArrayList<Node> nodes = new ArrayList<Node>(graph.getVertices());
 			Collections.sort(nodes,new Comparator<Node>()
 					{
@@ -162,19 +136,22 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 							return Integer.compare(o1.id,o2.id);
 						}						
 					});
-			/****************************************************************************************************
-			 * new layout of algorithm
-			 ****************************************************************************************************/
-			{
 			Point2D lastPoint = new Point2D.Float(100,100);
 			int index = 0;
+			
+			//set the center point
+			layout.setLocation(nodes.get(index++),lastPoint);
+			layout.lock(nodes.get(index - 1), true);
+			lastPoint = this.getNewPoint(lastPoint, RIGHT);
+			
 			ArrayList<Point2D> dirs = new ArrayList<Point2D>();
-			dirs.add(new Point2D.Float(-15,15));
-			dirs.add(new Point2D.Float(-15,-15));
-			dirs.add(new Point2D.Float(0,-30));
-			dirs.add(new Point2D.Float(15, -15));
-			dirs.add(new Point2D.Float(15,15));
-			dirs.add(new Point2D.Float(0,30));
+			
+			dirs.add(UP_RIGHT);
+			dirs.add(UP_LEFT);
+			dirs.add(LEFT);
+			dirs.add(DOWN_LEFT);
+			dirs.add(DOWN_RIGHT);
+			dirs.add(RIGHT);
 			
 			ArrayList<Integer> ringLength = new ArrayList<Integer>();
 			if(nodes.size() < 6) ringLength.add(nodes.size() - 1);
@@ -186,36 +163,35 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 				ringsum += nextNum;
 				ringLength.add(nextNum);
 			}
-			
+			//TODO: the arraylist of length of rings need not to be constructed
+			// iterate each rings
 			for(int n = 1; n <= ringLength.size(); n++)
 			{
-				// first need to get right
-				lastPoint = getNewPoint(lastPoint,new Point2D.Float(0,30));
-				Point2D dif = dirs.get(0);
-				// each ring starts at 3n(n + 1)
-				int counter = 0,difIndex = 0; // counter counts the length of the edge of the ring; difIndex controls the direction of the point
+				int dirIndex = 0;
+				int count = 1;
+				// iterate each nodes in a ring
 				try
 				{
-					for(int offset = 0; offset < ringLength.get(n - 1); offset++,index++)
+					for(int i = 1; i <= 6 * n; i++,index++)
 					{
-							if(counter == n) // corner case
-							{
-								counter = 0;
-								difIndex++;
-							}else
-							{
-								counter++;
-							}
-							lastPoint = getNewPoint(lastPoint,dirs.get(difIndex));
-							layout.setLocation(nodes.get(index),lastPoint);
-	
+						layout.setLocation(nodes.get(index), lastPoint);
+						layout.lock(nodes.get(index), true);
+						// change side at the beginning
+						// but this should be done after laying the current cell
+
+						if(count == n)
+						{
+							count = 1;
+							dirIndex++;
+						}else count++;
+						lastPoint = this.getNewPoint(lastPoint, dirIndex == 6? RIGHT: dirs.get(dirIndex));
 					}
 				}catch(IndexOutOfBoundsException e)
 				{
 					break;
 				}
 			}
-			}
+	
 		this.setGraphLayout(layout);
 	}
 	
@@ -226,59 +202,6 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 		return res;
 	}
 	// for step 5
-	private void layCellAndNeighbours(
-			Graph<Node,Integer> graph,
-			Node n, 
-			Point2D curPoint,
-			ArrayList<Node> freeNodes,
-			ArrayList<Point2D> usedCoordinates,
-			Layout<Node,Integer> layout)
-	{
-		ArrayList<Point2D> temp = new ArrayList<Point2D>();
-		temp.add(new Point2D.Float((float)curPoint.getX() - 30,(float)curPoint.getY()));
-		temp.add(new Point2D.Float((float)curPoint.getX() - 15,(float)curPoint.getY() + 15));
-		temp.add(new Point2D.Float((float)curPoint.getX() + 15,(float)curPoint.getY() + 15));
-		temp.add(new Point2D.Float((float)curPoint.getX() + 30,(float)curPoint.getY()));
-		temp.add(new Point2D.Float((float)curPoint.getX() + 15,(float)curPoint.getY() - 15));
-		temp.add(new Point2D.Float((float)curPoint.getX() - 15,(float)curPoint.getY() - 15));
-		// get the rest of the available points
-		// this list should have at least the same size of the free neighbors in the node
-		final ArrayList<Point2D> adjacentPoints = (ArrayList<Point2D>)temp
-						.stream()
-						.filter((point) -> !usedCoordinates.contains(point))
-						.collect(Collectors.toList());
-		// then shuffle the adjacentPoints and hopefully the node
-//		Collections.shuffle(adjacentPoints);
-		List<Node> effectiveNeighbours = freeNodes.stream()
-			.filter((neighbour) -> 
-				graph.isNeighbor(neighbour, n) && freeNodes.contains(neighbour)).collect(Collectors.toList());
-		// check if there are enough adjacent spaces for the the graph to put the neighbors of the current node
-		// if not then there's a problem and an exception has to be raised
-		if(adjacentPoints.size() < effectiveNeighbours.size())
-			throw new IllegalArgumentException("Number of adjacent points of a given node is not enough for it's neighbours. "
-					+ "The graph is probably invalid");
-		try
-		{
-			int i = 0;
-			// lay all neighbors first
-			for(Node neighbour : effectiveNeighbours)
-			{
-				Point2D point = adjacentPoints.get(i++);
-				layout.setLocation(neighbour,point);
-				usedCoordinates.add(point);
-				freeNodes.remove(neighbour);
-			}
-			// then for each neighbor, visit their unvisited neighbors
-			for(i = 0; i < effectiveNeighbours.size();i++)
-			{
-				layCellAndNeighbours(graph,effectiveNeighbours.get(i),adjacentPoints.get(i),freeNodes,usedCoordinates,layout);
-			}
-		}catch(Exception e)
-		{
-			e.printStackTrace();
-			return;
-		}
-	}
 	
 	private void lockLayout()
 	{
@@ -289,8 +212,8 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 
 	public GameView(Graph<Node,Integer> graph)
 	{
-		//TODO: switch back to static layout later
-		super(new ISOMLayout<Node,Integer>(graph));
+		super(new StaticLayout<Node,Integer>(graph));
+		initializeLayout(graph);
 		this.getRenderContext().setVertexFillPaintTransformer(paintTransformer);
 		this.getRenderContext().setVertexLabelTransformer(labelTransformer);
 		this.getRenderContext().setVertexStrokeTransformer(strokeTransformer);
@@ -302,10 +225,7 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 		{
 			@Override
 			public void graphClicked(Node arg0, MouseEvent arg1) {
-				lockLayout();
 				controller.selectNode(arg0);
-				revalidate();
-				repaint();
 			}
 
 			@Override
@@ -319,7 +239,6 @@ public class GameView extends VisualizationViewer<Node,Integer>{
 			}
 		
 		});
-//		initializeLayout(graph);
 	}
 
 }
